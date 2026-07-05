@@ -23,3 +23,16 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Custom local project docs and screenshots
+/.claude
+/PIC
+/pic
+/_admin_screenshots
+/docs
+/CLAUDE.md
+/claude.md
+/UI_GUIDELINES.md
+/ui guidelines.md
+/*.docx
+*.docx
