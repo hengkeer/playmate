@@ -1,0 +1,26 @@
+@startuml nav-06-admin
+top to bottom direction
+skinparam monochrome true
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam defaultTextAlignment center
+skinparam BackgroundColor white
+title PlayMate - Navigation Structure (Admin Panel)
+
+component "Admin Dashboard" as AdminDash
+
+component "Manage Users" as Users
+component "Manage Sports" as Sports
+component "Manage Venues" as Venues
+component "Manage Events" as Events
+component "Manage Participants" as Participants
+component "Event Messages (Read-only)" as Messages
+
+AdminDash --> Users
+AdminDash --> Sports
+AdminDash --> Venues
+AdminDash --> Events
+AdminDash --> Participants
+AdminDash --> Messages
+
+@enduml

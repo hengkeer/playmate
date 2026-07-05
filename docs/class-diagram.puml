@@ -1,0 +1,253 @@
+@startuml PlayMate_Class_Diagram
+!theme plain
+hide empty members
+
+title PlayMate — Class Diagram
+
+package "Core Models" {
+  class Sport {
+    -id: bigint
+    -name: string
+    -slug: string
+    -icon: string?
+    -description: text?
+    -skill_levels: JSON
+    ..
+    +getSkillLevels(): array
+    +getSkillLabel(int): string
+    +normalizeSkill(int): int
+    +getLabelFromNormalized(int): string
+    +maxSkillValue(): int
+  }
+
+  class User {
+    -id: bigint
+    -name: string
+    -email: string
+    -password: string
+    -photo_url: string?
+    -bio: text?
+    -gender: enum
+    -age_range: string?
+    -home_address: string?
+    -latitude: decimal?
+    -longitude: decimal?
+    -play_style: string?
+    -last_active_at: timestamp?
+    -total_events_joined: int
+    ..
+    +userSports: hasMany
+    +hostedEvents: hasMany
+    +joinedEvents: belongsToMany
+    +reviewsReceived: hasMany
+    +reviewsGiven: hasMany
+    +sentConnections: hasMany
+    +receivedConnections: hasMany
+    ..
+    +averageRating: float?
+    +totalReviews: int
+    +avatarInitial(): string
+    +getSkillForSport(int): int?
+    +distanceFromUser(User): float?
+    +isRecentlyActive(int): bool
+  }
+
+  class UserSport {
+    -id: bigint
+    -user_id: bigint FK
+    -sport_id: bigint FK
+    -skill_value: string
+    -skill_number: int
+    -play_style: string?
+    -preferred_start_time: time?
+    -preferred_end_time: time?
+    -preferred_days: JSON
+  }
+}
+
+package "Event System" {
+  class Event {
+    -id: bigint
+    -host_id: bigint FK
+    -sport_id: bigint FK?
+    -title: string
+    -description: text?
+    -venue_name: string
+    -latitude: decimal?
+    -longitude: decimal?
+    -start_time: datetime
+    -end_time: datetime
+    -max_slots: int
+    -price: decimal?
+    -payment_info: text?
+    -visibility: enum
+    -match_type: enum
+    -approval_required: boolean
+    -status: enum
+    ..
+    +host: belongsTo
+    +sport: belongsTo
+    +participants: hasMany
+    +approvedParticipants: hasMany
+    +users: belongsToMany
+    +messages: hasMany
+    ..
+    +isFull(): bool
+    +availableSlots(): int
+    +hasUser(User): bool
+    +isUserApproved(User): bool
+    +isHostedBy(User): bool
+    +canAccessChat(User): bool
+    +isUpcoming(): bool
+    +isPast(): bool
+  }
+
+  class EventParticipant {
+    -id: bigint
+    -event_id: bigint FK
+    -user_id: bigint FK
+    -status: enum
+    -slot_number: int?
+    -joined_at: timestamp?
+    ..
+    +event: belongsTo
+    +user: belongsTo
+    ..
+    +isApproved(): bool
+    +isPending(): bool
+    +isWaiting(): bool
+  }
+
+  class EventMessage {
+    -id: bigint
+    -event_id: bigint FK
+    -user_id: bigint FK
+    -content: text
+    -type: enum
+    -file_url: string?
+    -file_name: string?
+    ..
+    +event: belongsTo
+    +user: belongsTo
+    ..
+    +isOwnedBy(User): bool
+  }
+}
+
+package "Social & Messaging" {
+  class Connection {
+    -id: bigint
+    -requester_id: bigint FK
+    -receiver_id: bigint FK
+    -status: enum
+    ..
+    +requester: belongsTo
+    +receiver: belongsTo
+    +messages: hasMany
+    +latestMessage: hasOne
+    ..
+    +getOtherUser(User): User
+    +involvesUser(User): bool
+    +isPending(): bool
+    +isAccepted(): bool
+    +isDeclined(): bool
+    +isBlocked(): bool
+  }
+
+  class ConnectionMessage {
+    -id: bigint
+    -connection_id: bigint FK
+    -sender_id: bigint FK
+    -message: text
+    -type: enum
+    -file_url: string?
+    -file_name: string?
+    ..
+    +sender: belongsTo
+    ..
+    +isOwnedBy(User): bool
+  }
+
+  class UserReview {
+    -id: bigint
+    -reviewer_id: bigint FK
+    -reviewed_user_id: bigint FK
+    -rating: tinyint
+    -comment: text?
+    -source_type: string?
+    -source_id: bigint?
+    ..
+    +reviewer: belongsTo
+    +reviewedUser: belongsTo
+    ..
+    +isOwnedBy(User): bool
+  }
+}
+
+package "Venue System" {
+  class Venue {
+    -id: bigint
+    -name: string
+    -sport_id: bigint FK
+    -address: string
+    -area: string
+    -latitude: decimal?
+    -longitude: decimal?
+    -open_hours: string?
+    -description: text?
+    -price_estimate: string?
+    -contact: string?
+    -image_url: string?
+    -is_active: boolean
+    ..
+    +sport: belongsTo
+    +slots: hasMany
+    ..
+    +distanceFrom(float, float): float
+  }
+
+  class VenueSlot {
+    -id: bigint
+    -venue_id: bigint FK
+    -day_of_week: tinyint
+    -start_time: time
+    -end_time: time
+    -price: decimal?
+    -is_available: boolean
+    ..
+    +venue: belongsTo
+    ..
+    +getDayNameAttribute(): string
+  }
+}
+
+package "Services" {
+  class MatchmakingService {
+    +findMatches(User, array): Collection
+    +calculateScore(User, User, array): array
+  }
+}
+
+' Relationships
+User "1" --> "*" UserSport : hasMany
+Sport "1" --> "*" UserSport : hasMany
+User "1" --> "*" Event : hosts
+User "1" --> "*" EventParticipant : participates
+Sport "1" --> "*" Event : featured in
+
+Event "1" --> "*" EventParticipant : has
+EventParticipant "1" --> "1" User : involves
+Event "1" --> "*" EventMessage : contains
+
+User "1" --> "*" Connection : sent
+User "1" --> "*" Connection : received
+Connection "1" --> "*" ConnectionMessage : has
+ConnectionMessage "1" --> "1" User : sender
+
+User "1" --> "*" UserReview : received
+User "1" --> "*" UserReview : given
+
+Venue "1" --> "1" Sport : offers
+Venue "1" --> "*" VenueSlot : has
+
+@enduml

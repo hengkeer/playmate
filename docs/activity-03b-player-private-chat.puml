@@ -1,0 +1,27 @@
+@startuml activity-03b-player-private-chat
+title Player - Private Chat
+skinparam activity {
+  BackgroundColor #E3F2FD
+  BorderColor #1565C0
+  FontName Arial
+  FontSize 11
+  DiamondBackgroundColor #BBDEFB
+  DiamondBorderColor #1565C0
+  ArrowColor #0D47A1
+}
+
+|Player|
+start
+:Buka halaman Connections;
+:Pilih tab My Connections;
+:Pilih salah satu koneksi;
+:Buka Private Chat;
+:Kirim pesan teks / gambar / file;
+
+|System|
+:Simpan & tampilkan pesan\npada thread chat;
+
+|Player|
+stop
+
+@enduml

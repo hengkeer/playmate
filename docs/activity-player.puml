@@ -1,0 +1,98 @@
+@startuml activity-player
+title Player - Activity Diagram
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 16
+skinparam ArrowFontSize 14
+skinparam activity {
+  FontSize 16
+  FontName Arial
+  DiamondFontSize 14
+}
+
+|Player|
+start
+:Login ke sistem;
+|System|
+if (Validasi Login) then (Salah)
+  :Tampilkan pesan error;
+  stop
+else (Benar)
+endif
+:Akses Dashboard;
+
+|Player|
+if (Pilih menu) then (pilih salah satu)
+
+  :Atur filter Matchmaking;
+  |System|
+  :Hitung skor rule-based\n& tampilkan rekomendasi;
+
+  |Player|
+  :Klik Challenge pemain;
+  |System|
+  :Simpan event & undang lawan\nsebagai pending participant;
+
+  |Player|
+  :Update Profile (bio, sports, skill);
+  |System|
+  :Simpan perubahan profil;
+
+  |Player|
+  :Kelola Connections\n(kirim / terima / tolak);
+  |System|
+  :Update status koneksi;
+
+  |Player|
+  :Buka Private Chat & kirim pesan;
+  |System|
+  :Simpan & tampilkan pesan;
+
+  |Player|
+  :Join / Leave Event;
+  |System|
+  :Update status partisipasi;
+
+  |Player|
+  :Kirim pesan Event Group Chat;
+  |System|
+  :Simpan & tampilkan pesan;
+
+  |Player|
+  :Lihat tab My Events;
+  |System|
+  :Tampilkan daftar event;
+
+  |Player|
+  :Tulis Review pemain lain;
+  |System|
+  if (Sudah pernah review?) then (Ya)
+    :Tolak (duplikasi);
+  else (Belum)
+    :Simpan review;
+  endif
+
+  |Player|
+  :Buka AI Assistant & kirim pertanyaan;
+  |System|
+  :Proses RAG &\nkembalikan balasan Gemini;
+
+  |Player|
+  :Logout;
+  |System|
+  :Sesi berakhir;
+  stop
+
+else ( )
+endif
+stop
+
+note right
+  "Pilih menu" mewakili semua fitur Player.
+  Ditampilkan berurutan untuk menyederhanakan
+  diagram, bukan urutan wajib. AI Assistant &
+  Logout dapat diakses dari halaman mana saja.
+end note
+
+@enduml

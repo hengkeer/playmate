@@ -1,0 +1,31 @@
+@startuml nav-03-player-social
+top to bottom direction
+skinparam monochrome true
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam defaultTextAlignment center
+skinparam BackgroundColor white
+title PlayMate - Navigation Structure (Player - Social)
+
+component "Dashboard" as Dashboard
+
+component "Connections" as Connections
+component "Incoming Requests" as Incoming
+component "Sent Requests" as Sent
+component "My Connections" as MyConnections
+component "Private Chat" as PrivateChat
+
+component "Reviews" as Reviews
+component "Create Review" as CreateReview
+
+Dashboard --> Connections
+Dashboard --> Reviews
+
+Connections --> Incoming
+Connections --> Sent
+Connections --> MyConnections
+MyConnections --> PrivateChat
+
+Reviews --> CreateReview
+
+@enduml

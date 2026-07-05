@@ -1,0 +1,33 @@
+@startuml activity-03a-player-connection-requests
+title Player - Permintaan Koneksi
+skinparam activity {
+  BackgroundColor #E3F2FD
+  BorderColor #1565C0
+  FontName Arial
+  FontSize 11
+  DiamondBackgroundColor #BBDEFB
+  DiamondBorderColor #1565C0
+  ArrowColor #0D47A1
+}
+
+|Player|
+start
+:Buka halaman Connections;
+
+if (Pilih tab?) then (Incoming)
+  :Lihat permintaan masuk;
+  if (Terima permintaan?) then (ya)
+    |System|
+    :Set status accepted;
+  else (tidak)
+    |System|
+    :Set status declined;
+  endif
+else (Sent)
+  :Lihat daftar permintaan\nyang sudah dikirim (pending);
+endif
+
+|Player|
+stop
+
+@enduml

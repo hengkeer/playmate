@@ -1,0 +1,39 @@
+@startuml activity-05-player-profile-review
+title Player - Manage Profile & Write Review
+skinparam activity {
+  BackgroundColor #E3F2FD
+  BorderColor #1565C0
+  FontName Arial
+  FontSize 11
+  DiamondBackgroundColor #BBDEFB
+  DiamondBorderColor #1565C0
+  ArrowColor #0D47A1
+}
+
+|Player|
+start
+:Buka halaman Profile;
+:Update bio, avatar, gender, GPS;
+:Kelola data per-sport\n(skill level, play style, preferred time);
+:Simpan perubahan;
+
+|System|
+:Hapus & buat ulang data user_sports;
+
+|Player|
+:Buka halaman Write Review;
+:Pilih target pemain & sumber\n(connection / event);
+:Beri rating 1-5 + komentar;
+:Submit review;
+
+|System|
+if (Sudah pernah review\npemain & sumber ini?) then (ya)
+  :Tolak — tampilkan\npesan duplikasi;
+else (tidak)
+  :Simpan review;
+endif
+
+|Player|
+stop
+
+@enduml

@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>PlayMate — Activity Diagram</title>
+<style>
+  body { margin: 0; background: #f5f5f5; font-family: 'Segoe UI', Arial, sans-serif; }
+  h1 { text-align:center; font-size:16px; font-weight:700; padding:20px 0 10px; letter-spacing:1px; color:#1a1a2e; }
+  .wrap { overflow-x:auto; padding:0 20px 40px; }
+  svg text { font-family:'Segoe UI',Arial,sans-serif; }
+</style>
+</head>
+<body>
+<h1>PLAYMATE — SYSTEM ACTIVITY DIAGRAM</h1>
+<div class="wrap">
+<svg width="860" height="3100" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+    <path d="M0,0 L0,6 L8,3 z" fill="#444"/>
+  </marker>
+  <marker id="arrW" markerWidth="8" markerHeight="8" refX="2" refY="3" orient="auto">
+    <path d="M8,0 L8,6 L0,3 z" fill="#444"/>
+  </marker>
+</defs>
+
+<!-- ═══════════════════════════════════════════
+     OUTER BORDER + SWIMLANE COLUMNS
+════════════════════════════════════════════ -->
+<rect x="10" y="10" width="840" height="3080" fill="white" stroke="#4a6fa5" stroke-width="2" rx="2"/>
+
+<!-- Header row -->
+<rect x="10" y="10" width="210" height="40" fill="#b8d4e8" stroke="#4a6fa5" stroke-width="1"/>
+<rect x="220" y="10" width="210" height="40" fill="#b8d4e8" stroke="#4a6fa5" stroke-width="1"/>
+<rect x="430" y="10" width="210" height="40" fill="#b8d4e8" stroke="#4a6fa5" stroke-width="1"/>
+<rect x="640" y="10" width="210" height="40" fill="#b8d4e8" stroke="#4a6fa5" stroke-width="1"/>
+
+<text x="115" y="35" text-anchor="middle" font-weight="700" font-size="13" fill="#1a1a2e">Guest / Visitor</text>
+<text x="325" y="35" text-anchor="middle" font-weight="700" font-size="13" fill="#1a1a2e">Player (Auth User)</text>
+<text x="535" y="35" text-anchor="middle" font-weight="700" font-size="13" fill="#1a1a2e">Admin</text>
+<text x="745" y="35" text-anchor="middle" font-weight="700" font-size="13" fill="#1a1a2e">Database</text>
+
+<!-- Lane dividers -->
+<line x1="220" y1="50" x2="220" y2="3090" stroke="#4a6fa5" stroke-width="1"/>
+<line x1="430" y1="50" x2="430" y2="3090" stroke="#4a6fa5" stroke-width="1"/>
+<line x1="640" y1="50" x2="640" y2="3090" stroke="#4a6fa5" stroke-width="1"/>
+
+<!-- Lane backgrounds -->
+<rect x="11" y="51" width="208" height="3038" fill="#f0f8ff" opacity="0.5"/>
+<rect x="221" y="51" width="208" height="3038" fill="#f9fff0" opacity="0.5"/>
+<rect x="431" y="51" width="208" height="3038" fill="#fff5f0" opacity="0.5"/>
+<rect x="641" y="51" width="208" height="3038" fill="#f5fff5" opacity="0.5"/>
+
+<!-- ═══════════════════════════════════════════
+     HELPERS (macros via reuse)
+     Rounded rect: process   fill=#d6eaf8 stroke=#2980b9
+     DB cylinder:            fill=#d5f5e3 stroke=#27ae60
+     Decision diamond
+════════════════════════════════════════════ -->
+
+<!-- ══════════════ GUEST LANE ══════════════ -->
+
+<!-- START circle -->
+<circle cx="115" cy="90" r="14" fill="#aed6f1" stroke="#2980b9" stroke-width="2"/>
+<!-- arrow down -->
+<line x1="115" y1="104" x2="115" y2="118" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+<!-- Visit Landing Page -->
+<rect x="55" y="120" width="120" height="38" rx="8" fill="#d6eaf8" stroke="#2980b9" stroke-width="1.5"/>
+<text x="115" y="136" text-anchor="middle" font-size="11" fill="#1a1a2e">Visit</text>
+<text x="115" y="150" text-anchor="middle" font-size="11" fill="#1a1a2e">Landing Page</text>
+<line x1="115" y1="158" x2="115" y2="172" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+<!-- Browse Events / Venues (public) -->
+<rect x="45" y="174" width="140" height="44" rx="8" fill="#d6eaf8" stroke="#2980b9" stroke-width="1.5"/>
+<text x="115" y="191" text-anchor="middle" font-size="11" fill="#1a1a2e">Browse Events</text>
+<text x="115" y="205" text-anchor="middle" font-size="11" fill="#1a1a2e">&amp; Venues (public)</text>
+<line x1="115" y1="218" x2="115" y2="232" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+<!-- Choose Login or Register -->
+<rect x="50" y="234" width="130" height="38" rx="8" fill="#d6eaf8" stroke="#2980b9" stroke-width="1.5"/>
+<text x="115" y="250" text-anchor="middle" font-size="11" fill="#1a1a2e">Choose: Login</text>
+<text x="115" y="264" text-anchor="middle" font-size="11" fill="#1a1a2e">or Register</text>
+<line x1="115" y1="272" x2="115" y2="288" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+<!-- DIAMOND: Has Account? -->
+<polygon points="115,292 150,316 115,340 80,316" fill="#d6eaf8" stroke="#2980b9" stroke-width="1.5"/>
+<text x="115" y="312" text-anchor="middle" font-size="10" fill="#1a1a2e">Has</text>
+<text x="115" y="325" text-anchor="middle" font-size="10" fill="#1a1a2e">Account?</text>
+
+<!-- No → left to Register -->
+<line x1="80" y1="316" x2="30" y2="316" stroke="#444" stroke-width="1.5"/>
+<line x1="30" y1="316" x2="30" y2="396" stroke="#444" stroke-width="1.5"/>
+<line x1="30" y1="396" x2="48" y2="396" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+<text x="56" y="312" font-size="10" fill="#555">No</text>
+
+<!-- Register Box -->
+<rect x="50" y="378" width="130" height="52" rx="8" fill="#d6eaf8" stroke="#2980b9" stroke-width="1.5"/>
+<text x="115" y="397" text-anchor="middle" font-size="11" fill="#1a1a2e">Fill Register Form</text>
+<text x="115" y="410" text-anchor="middle" font-size="10" fill="#555">(name, email,</text>
+<text x="115" y="422" text-anchor="middle" font-size="10" fill="#555">password, play_style)</text>
+
+<!-- Yes → down from diamond -->
+<line x1="115" y1="340" x2="115" y2="356" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+<text x="120" y="352" font-size="10" fill="#555">Yes</text>
+
+<!-- Login Box -->
+<rect x="50" y="358" width="130" height="38" rx="8" fill="#d6eaf8" stroke="#2980b9" stroke-width="1.5"/>
+<text x="115" y="375" text-anchor="middle" font-size="11" fill="#1a1a2e">Fill Login Form</text>
+<text x="115" y="389" text-anchor="middle" font-size="10" fill="#555">(email + password)</text>
+<line x1="115" y1="396" x2="115" y2="432" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+<!-- DIAMOND: Valid Credentials? -->
+<polygon points="115,434 150,458 115,482 80,458" fill="#d6eaf8" stroke="#2980b9" stroke-width="1.5"/>
+<text x="115" y="454" text-anchor="middle" font-size="10" fill="#1a1a2e">Valid</text>
+<text x="115" y="467" text-anchor="middle" font-size="10" fill="#1a1a2e">Creds?</text>
+
+<!-- No loop back -->
+<line x1="80" y1="458" x2="22" y2="458" stroke="#444" stroke-width="1.5"/>
+<line x1="22" y1="458" x2="22" y2="367" stroke="#444" stroke-width="1.5"/>
+<line x1="22" y1="367" x2="48" y2="367" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+<text x="26" y="454" font-size="10" fill="#555">No</text>
+
+<!-- Yes → Redirect -->
+<line x1="115" y1="482" x2="115" y2="498" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+<text x="120" y="494" font-size="10" fill="#555">Yes</text>
+<rect x="50" y="500" width="130" height="36" rx="8" fill="#fef9e7" stroke="#f39c12" stroke-width="1.5"/>
+<text x="115" y="516" text-anchor="middle" font-size="11" fill="#7d6608">Redirect to</text>
+<text x="115" y="530" text-anchor="middle" font-size="11" fill="#7d6608">Dashboard</text>
+
+<!-- Arrow crossing to Player lane -->
+<line x1="180" y1="518" x2="218" y2="518" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+<!-- Register also saves to DB — arrow right -->
+<line x1="180" y1="404" x2="640" y2="404" stroke="#444" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+
+<!-- ══════════════ PLAYER LANE ══════════════ -->
+
+<!-- View Dashboard -->
+<rect x="240" y="500" width="170" height="36" rx="8" fill="#d5f5e3" stroke="#27ae60" stroke-width="2"/>
+<text x="325" y="516" text-anchor="middle" font-size="12" font-weight="600" fill="#145a32">View Dashboard</text>
+<text x="325" y="530" text-anchor="middle" font-size="10" fill="#145a32">(auth required)</text>
+<line x1="325" y1="536" x2="325" y2="552" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+<!-- DIAMOND: Choose Feature -->
+<polygon points="325,554 372,584 325,614 278,584" fill="#fef9e7" stroke="#f39c12" stroke-width="1.5"/>
+<text x="325" y="580" text-anchor="middle" font-size="10" fill="#1a1a2e">Choose</text>
+<text x="325" y="593" text-anchor="middle" font-size="10" fill="#1a1a2e">Feature</text>
+
+<!-- ── Branch 1: MATCHMAKING ── -->
+<line x1="325" y1="614" x2="325" y2="630" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+<text x="330" y="626" font-size="10" fill="#555">Matchmaking</text>
+
+<rect x="240" y="632" width="170" height="38" rx="8" fill="#d6eaf8" stroke="#2980b9" stroke-width="1.5"/>
+<text x="325" y="648" text-anchor="middle" font-size="11" fill="#1a1a2e">Run Matchmaking</text>
+<text x="325" y="662" text-anchor="middle" font-size="10" fill="#555">(sport, skill, radius filters)</text>
+<line x1="325" y1="670" x2="325" y2="684" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+<!-- DB query for matchmaking -->
+<line x1="410" y1="651" x2="642" y2="651" stroke="#444" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+
+<rect x="240" y="686" width="170" height="38" rx="8" fill="#d6eaf8" stroke="#2980b9" stroke-width="1.5"/>
+<text x="325" y="702" text-anchor="middle" font-size="11" fill="#1a1a2e">View Match Results</text>
+<text x="325" y="716" text-anchor="middle" font-size="10" fill="#555">(score + breakdown)</text>
+<line x1="325" y1="724" x2="325" y2="740" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+<!-- DIAMOND: Challenge? -->
+<polygon points="325,742 362,764 325,786 288,764" fill="#d6eaf8" stroke="#2980b9" stroke-width="1.5"/>
+<text x="325" y="760" text-anchor="middle" font-size="10" fill="#1a1a2e">Challenge</text>
+<text x="325" y="773" text-anchor="middle" font-size="10" fill="#1a1a2e">Player?</text>
+
+<line x1="325" y1="786" x2="325" y2="800" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+<text x="330" y="796" font-size="10" fill="#555">Yes</text>
+
+<rect x="240" y="802" width="170" height="38" rx="8" fill="#d6eaf8" stroke="#2980b9" stroke-width="1.5"/>
+<text x="325" y="818" text-anchor="middle" font-size="11" fill="#1a1a2e">Open Challenge Form</text>
+<text x="325" y="832" text-anchor="middle" font-size="10" fill="#555">(host-game, venue + time)</text>
+<line x1="325" y1="840" x2="325" y2="854" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+<rect x="240" y="856" width="170" height="36" rx="8" fill="#d6eaf8" stroke="#2980b9" stroke-width="1.5"/>
+<text x="325" y="872" text-anchor="middle" font-size="11" fill="#1a1a2e">Submit Challenge</text>
+<text x="325" y="886" text-anchor="middle" font-size="10" fill="#555">→ Event + invite opponent</text>
+
+<!-- DB: INSERT events -->
+<line x1="410" y1="874" x2="642" y2="874" stroke="#444" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+
+<line x1="325" y1="892" x2="325" y2="910" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+<!-- ── Branch 2: HOST EVENT ── -->
+<rect x="240" y="912" width="170" height="44" rx="8" fill="#d6eaf8" stroke="#2980b9" stroke-width="1.5"/>
+<text x="325" y="928" text-anchor="middle" font-size="11" fill="#1a1a2e">Host / Join Event</text>
+<text x="325" y="942" text-anchor="middle" font-size="10" fill="#555">(venue autocomplete + map)</text>
+<text x="325" y="954" text-anchor="middle" font-size="10" fill="#555">visibility, slots, price</text>
+<line x1="325" y1="956" x2="325" y2="970" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+<!-- DB: INSERT events -->
+<line x1="410" y1="934" x2="642" y2="934" stroke="#444" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+
+<rect x="240" y="972" width="170" height="38" rx="8" fill="#d6eaf8" stroke="#2980b9" stroke-width="1.5"/>
+<text x="325" y="988" text-anchor="middle" font-size="11" fill="#1a1a2e">View My Events</text>
+<text x="325" y="1002" text-anchor="middle" font-size="10" fill="#555">(upcoming / hosted / past)</text>
+<line x1="325" y1="1010" x2="325" y2="1024" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+<!-- Host Approval -->
+<rect x="240" y="1026" width="170" height="44" rx="8" fill="#d6eaf8" stroke="#2980b9" stroke-width="1.5"/>
+<text x="325" y="1042" text-anchor="middle" font-size="11" fill="#1a1a2e">Host: Approve /</text>
+<text x="325" y="1056" text-anchor="middle" font-size="11" fill="#1a1a2e">Decline Join Request</text>
+<text x="325" y="1068" text-anchor="middle" font-size="10" fill="#555">(my-events/host-requests)</text>
+
+<!-- DB: UPDATE participants -->
+<line x1="410" y1="1048" x2="642" y2="1048" stroke="#444" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+<line x1="325" y1="1070" x2="325" y2="1084" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+<!-- ── GROUP CHAT ── -->
+<rect x="240" y="1086" width="170" height="38" rx="8" fill="#d6eaf8" stroke="#2980b9" stroke-width="1.5"/>
+<text x="325" y="1102" text-anchor="middle" font-size="11" fill="#1a1a2e">Open Group Chat</text>
+<text x="325" y="1116" text-anchor="middle" font-size="10" fill="#555">(approved participants only)</text>
+<line x1="325" y1="1124" x2="325" y2="1138" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+<rect x="240" y="1140" width="170" height="36" rx="8" fill="#d6eaf8" stroke="#2980b9" stroke-width="1.5"/>
+<text x="325" y="1156" text-anchor="middle" font-size="11" fill="#1a1a2e">Send Message / File</text>
+<text x="325" y="1170" text-anchor="middle" font-size="10" fill="#555">(text, image, .pdf)</text>
+
+<!-- DB: INSERT event_messages -->
+<line x1="410" y1="1158" x2="642" y2="1158" stroke="#444" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+<line x1="325" y1="1176" x2="325" y2="1194" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+<!-- ── CONNECTIONS ── -->
+<rect x="240" y="1196" width="170" height="38" rx="8" fill="#d6eaf8" stroke="#2980b9" stroke-width="1.5"/>
+<text x="325" y="1212" text-anchor="middle" font-size="11" fill="#1a1a2e">View Player Profile</text>
+<text x="325" y="1226" text-anchor="middle" font-size="10" fill="#555">(/players/{user})</text>
+<line x1="325" y1="1234" x2="325" y2="1248" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+<rect x="240" y="1250" width="170" height="36" rx="8" fill="#d6eaf8" stroke="#2980b9" stroke-width="1.5"/>
+<text x="325" y="1266" text-anchor="middle" font-size="11" fill="#1a1a2e">Send Connection</text>
+<text x="325" y="1280" text-anchor="middle" font-size="11" fill="#1a1a2e">Request</text>
+
+<!-- DB: INSERT connections -->
+<line x1="410" y1="1268" x2="642" y2="1268" stroke="#444" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+<line x1="325" y1="1286" x2="325" y2="1302" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+<!-- DIAMOND: Accepted? -->
+<polygon points="325,1304 362,1326 325,1348 288,1326" fill="#d6eaf8" stroke="#2980b9" stroke-width="1.5"/>
+<text x="325" y="1322" text-anchor="middle" font-size="10" fill="#1a1a2e">Request</text>
+<text x="325" y="1335" text-anchor="middle" font-size="10" fill="#1a1a2e">Accepted?</text>
+
+<line x1="325" y1="1348" x2="325" y2="1364" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+<text x="330" y="1360" font-size="10" fill="#555">Yes</text>
+
+<!-- DB: UPDATE connections -->
+<line x1="362" y1="1326" x2="642" y2="1326" stroke="#444" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+
+<rect x="240" y="1366" width="170" height="36" rx="8" fill="#d6eaf8" stroke="#2980b9" stroke-width="1.5"/>
+<text x="325" y="1382" text-anchor="middle" font-size="11" fill="#1a1a2e">Open Private Chat</text>
+<text x="325" y="1396" text-anchor="middle" font-size="10" fill="#555">(DM thread)</text>
+<line x1="325" y1="1402" x2="325" y2="1416" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+<rect x="240" y="1418" width="170" height="36" rx="8" fill="#d6eaf8" stroke="#2980b9" stroke-width="1.5"/>
+<text x="325" y="1434" text-anchor="middle" font-size="11" fill="#1a1a2e">Send Message / File</text>
+<text x="325" y="1448" text-anchor="middle" font-size="10" fill="#555">(text, image, .pdf)</text>
+
+<!-- DB: INSERT connection_messages -->
+<line x1="410" y1="1436" x2="642" y2="1436" stroke="#444" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+<line x1="325" y1="1454" x2="325" y2="1472" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+<!-- ── PROFILE ── -->
+<rect x="240" y="1474" width="170" height="44" rx="8" fill="#d6eaf8" stroke="#2980b9" stroke-width="1.5"/>
+<text x="325" y="1490" text-anchor="middle" font-size="11" fill="#1a1a2e">Edit Profile</text>
+<text x="325" y="1504" text-anchor="middle" font-size="10" fill="#555">(avatar, bio, location,</text>
+<text x="325" y="1516" text-anchor="middle" font-size="10" fill="#555">sport + skill + schedule)</text>
+
+<!-- DB: UPDATE users + user_sports -->
+<line x1="410" y1="1496" x2="642" y2="1496" stroke="#444" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+<line x1="325" y1="1518" x2="325" y2="1536" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+<!-- ── AI ASSISTANT ── -->
+<rect x="240" y="1538" width="170" height="44" rx="8" fill="#d6eaf8" stroke="#2980b9" stroke-width="1.5"/>
+<text x="325" y="1554" text-anchor="middle" font-size="11" fill="#1a1a2e">Open AI Assistant</text>
+<text x="325" y="1568" text-anchor="middle" font-size="10" fill="#555">(widget / /chat page)</text>
+<text x="325" y="1580" text-anchor="middle" font-size="10" fill="#555">Create / Select session</text>
+<line x1="325" y1="1582" x2="325" y2="1596" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+<rect x="240" y="1598" width="170" height="36" rx="8" fill="#d6eaf8" stroke="#2980b9" stroke-width="1.5"/>
+<text x="325" y="1614" text-anchor="middle" font-size="11" fill="#1a1a2e">Send Question</text>
+<text x="325" y="1628" text-anchor="middle" font-size="10" fill="#555">(type query)</text>
+<line x1="325" y1="1634" x2="325" y2="1648" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+<!-- DB + Gemini for chatbot -->
+<line x1="410" y1="1616" x2="642" y2="1616" stroke="#444" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+
+<rect x="240" y="1650" width="170" height="44" rx="8" fill="#d6eaf8" stroke="#2980b9" stroke-width="1.5"/>
+<text x="325" y="1666" text-anchor="middle" font-size="11" fill="#1a1a2e">Receive RAG Answer</text>
+<text x="325" y="1680" text-anchor="middle" font-size="10" fill="#555">(Gemini 2.5 Flash)</text>
+<text x="325" y="1692" text-anchor="middle" font-size="10" fill="#555">cosine-sim chunks.json</text>
+<line x1="325" y1="1694" x2="325" y2="1712" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+<!-- ── REVIEW ── -->
+<rect x="240" y="1714" width="170" height="38" rx="8" fill="#d6eaf8" stroke="#2980b9" stroke-width="1.5"/>
+<text x="325" y="1730" text-anchor="middle" font-size="11" fill="#1a1a2e">Leave Review</text>
+<text x="325" y="1744" text-anchor="middle" font-size="10" fill="#555">(1–5 ★ + comment)</text>
+
+<!-- DB: INSERT user_reviews -->
+<line x1="410" y1="1733" x2="642" y2="1733" stroke="#444" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+<line x1="325" y1="1752" x2="325" y2="1768" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+<!-- LOGOUT -->
+<rect x="250" y="1770" width="150" height="36" rx="8" fill="#fef9e7" stroke="#f39c12" stroke-width="1.5"/>
+<text x="325" y="1786" text-anchor="middle" font-size="11" fill="#7d6608">Logout</text>
+<text x="325" y="1800" text-anchor="middle" font-size="10" fill="#7d6608">(destroy session)</text>
+<line x1="325" y1="1806" x2="325" y2="1820" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+<!-- DB: DESTROY session -->
+<line x1="400" y1="1788" x2="642" y2="1788" stroke="#444" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+
+<!-- END Player -->
+<circle cx="325" cy="1832" r="10" fill="none" stroke="#1a1a2e" stroke-width="3"/>
+<circle cx="325" cy="1832" r="5" fill="#1a1a2e"/>
+<rect x="265" y="1850" width="120" height="28" rx="14" fill="#eee" stroke="#aaa" stroke-width="1.5"/>
+<text x="325" y="1869" text-anchor="middle" font-size="12" fill="#555">End</text>
+
+<!-- ══════════════ ADMIN LANE ══════════════ -->
+
+<!-- START -->
+<circle cx="535" cy="90" r="14" fill="#aed6f1" stroke="#2980b9" stroke-width="2"/>
+<line x1="535" y1="104" x2="535" y2="118" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+<rect x="455" y="120" width="160" height="36" rx="8" fill="#d6eaf8" stroke="#2980b9" stroke-width="1.5"/>
+<text x="535" y="137" text-anchor="middle" font-size="11" fill="#1a1a2e">Navigate to /admin</text>
+<text x="535" y="150" text-anchor="middle" font-size="10" fill="#555">(Filament Panel)</text>
+<line x1="535" y1="156" x2="535" y2="172" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+<!-- DIAMOND: role = admin? -->
+<polygon points="535,174 575,198 535,222 495,198" fill="#d6eaf8" stroke="#2980b9" stroke-width="1.5"/>
+<text x="535" y="194" text-anchor="middle" font-size="10" fill="#1a1a2e">role =</text>
+<text x="535" y="207" text-anchor="middle" font-size="10" fill="#1a1a2e">'admin'?</text>
+
+<!-- No → 403 -->
+<line x1="495" y1="198" x2="435" y2="198" stroke="#444" stroke-width="1.5"/>
+<rect x="435" y="188" width="60" height="20" rx="4" fill="#fce4e4" stroke="#e74c3c" stroke-width="1"/>
+<text x="465" y="201" text-anchor="middle" font-size="10" fill="#c0392b">403</text>
+<text x="490" y="193" font-size="10" fill="#555">No</text>
+
+<!-- Yes -->
+<line x1="535" y1="222" x2="535" y2="238" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+<text x="540" y="234" font-size="10" fill="#555">Yes</text>
+
+<!-- Filament Dashboard -->
+<rect x="455" y="240" width="160" height="36" rx="8" fill="#fde8d8" stroke="#e67e22" stroke-width="2"/>
+<text x="535" y="256" text-anchor="middle" font-size="11" font-weight="600" fill="#7d3c00">Filament Dashboard</text>
+<text x="535" y="270" text-anchor="middle" font-size="10" fill="#7d3c00">(admin panel)</text>
+<line x1="535" y1="276" x2="535" y2="292" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+<!-- Manage Users -->
+<rect x="455" y="294" width="160" height="44" rx="8" fill="#d6eaf8" stroke="#2980b9" stroke-width="1.5"/>
+<text x="535" y="310" text-anchor="middle" font-size="11" fill="#1a1a2e">Manage Users</text>
+<text x="535" y="324" text-anchor="middle" font-size="10" fill="#555">(edit role, profile,</text>
+<text x="535" y="337" text-anchor="middle" font-size="10" fill="#555">reset password)</text>
+
+<line x1="620" y1="316" x2="642" y2="316" stroke="#444" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+<line x1="535" y1="338" x2="535" y2="354" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+<!-- Manage Venues -->
+<rect x="455" y="356" width="160" height="44" rx="8" fill="#d6eaf8" stroke="#2980b9" stroke-width="1.5"/>
+<text x="535" y="372" text-anchor="middle" font-size="11" fill="#1a1a2e">Manage Venues</text>
+<text x="535" y="386" text-anchor="middle" font-size="10" fill="#555">(add, edit, lat/lng</text>
+<text x="535" y="399" text-anchor="middle" font-size="10" fill="#555">Filament Pinpoint)</text>
+
+<line x1="620" y1="378" x2="642" y2="378" stroke="#444" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+<line x1="535" y1="400" x2="535" y2="416" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+<!-- Manage Events -->
+<rect x="455" y="418" width="160" height="38" rx="8" fill="#d6eaf8" stroke="#2980b9" stroke-width="1.5"/>
+<text x="535" y="434" text-anchor="middle" font-size="11" fill="#1a1a2e">Manage Events</text>
+<text x="535" y="448" text-anchor="middle" font-size="10" fill="#555">(view, cancel, participants)</text>
+
+<line x1="620" y1="437" x2="642" y2="437" stroke="#444" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+<line x1="535" y1="456" x2="535" y2="472" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+<!-- Manage Sports -->
+<rect x="455" y="474" width="160" height="38" rx="8" fill="#d6eaf8" stroke="#2980b9" stroke-width="1.5"/>
+<text x="535" y="490" text-anchor="middle" font-size="11" fill="#1a1a2e">Manage Sports</text>
+<text x="535" y="504" text-anchor="middle" font-size="10" fill="#555">(skill levels JSON)</text>
+
+<line x1="620" y1="493" x2="642" y2="493" stroke="#444" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+<line x1="535" y1="512" x2="535" y2="528" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+<!-- View Reports -->
+<rect x="455" y="530" width="160" height="38" rx="8" fill="#d6eaf8" stroke="#2980b9" stroke-width="1.5"/>
+<text x="535" y="546" text-anchor="middle" font-size="11" fill="#1a1a2e">View Reports &amp;</text>
+<text x="535" y="560" text-anchor="middle" font-size="10" fill="#555">Activity Logs</text>
+<line x1="535" y1="568" x2="535" y2="584" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+
+<!-- END Admin -->
+<circle cx="535" cy="596" r="10" fill="none" stroke="#1a1a2e" stroke-width="3"/>
+<circle cx="535" cy="596" r="5" fill="#1a1a2e"/>
+<rect x="475" y="614" width="120" height="28" rx="14" fill="#eee" stroke="#aaa" stroke-width="1.5"/>
+<text x="535" y="633" text-anchor="middle" font-size="12" fill="#555">End</text>
+
+<!-- ══════════════ DATABASE LANE ══════════════ -->
+
+<!-- DB style = green fill, monospace font for table names -->
+
+<!-- users table — Register -->
+<rect x="648" y="386" width="196" height="56" rx="6" fill="#d5f5e3" stroke="#27ae60" stroke-width="1.5"/>
+<text x="746" y="403" text-anchor="middle" font-size="10" font-weight="700" fill="#145a32">🗄 TABLE: users</text>
+<text x="746" y="417" text-anchor="middle" font-size="10" fill="#145a32">INSERT (name, email,</text>
+<text x="746" y="430" text-anchor="middle" font-size="10" fill="#145a32">password_hash, play_style)</text>
+
+<!-- users table — Login check -->
+<rect x="648" y="455" width="196" height="46" rx="6" fill="#d5f5e3" stroke="#27ae60" stroke-width="1.5"/>
+<text x="746" y="472" text-anchor="middle" font-size="10" font-weight="700" fill="#145a32">🗄 TABLE: users</text>
+<text x="746" y="486" text-anchor="middle" font-size="10" fill="#145a32">SELECT + bcrypt verify</text>
+<text x="746" y="498" text-anchor="middle" font-size="10" fill="#145a32">→ CREATE session</text>
+
+<!-- MatchmakingService -->
+<rect x="648" y="630" width="196" height="56" rx="6" fill="#d5f5e3" stroke="#27ae60" stroke-width="1.5"/>
+<text x="746" y="647" text-anchor="middle" font-size="10" font-weight="700" fill="#145a32">🗄 users + user_sports</text>
+<text x="746" y="661" text-anchor="middle" font-size="10" fill="#145a32">SELECT WHERE active</text>
+<text x="746" y="675" text-anchor="middle" font-size="10" fill="#145a32">→ PHP score engine</text>
+
+<!-- events (challenge + host) -->
+<rect x="648" y="854" width="196" height="66" rx="6" fill="#d5f5e3" stroke="#27ae60" stroke-width="1.5"/>
+<text x="746" y="871" text-anchor="middle" font-size="10" font-weight="700" fill="#145a32">🗄 events</text>
+<text x="746" y="885" text-anchor="middle" font-size="10" fill="#145a32">INSERT (host_id, sport_id,</text>
+<text x="746" y="899" text-anchor="middle" font-size="10" fill="#145a32">venue, lat, lng, slots)</text>
+<text x="746" y="913" text-anchor="middle" font-size="10" fill="#145a32">+ event_participants</text>
+
+<!-- My Events query -->
+<rect x="648" y="972" width="196" height="56" rx="6" fill="#d5f5e3" stroke="#27ae60" stroke-width="1.5"/>
+<text x="746" y="989" text-anchor="middle" font-size="10" font-weight="700" fill="#145a32">🗄 events</text>
+<text x="746" y="1003" text-anchor="middle" font-size="10" fill="#145a32">SELECT JOIN event_</text>
+<text x="746" y="1017" text-anchor="middle" font-size="10" fill="#145a32">participants WHERE user</text>
+
+<!-- participants approve -->
+<rect x="648" y="1026" width="196" height="46" rx="6" fill="#d5f5e3" stroke="#27ae60" stroke-width="1.5"/>
+<text x="746" y="1043" text-anchor="middle" font-size="10" font-weight="700" fill="#145a32">🗄 event_participants</text>
+<text x="746" y="1057" text-anchor="middle" font-size="10" fill="#145a32">UPDATE status =</text>
+<text x="746" y="1069" text-anchor="middle" font-size="10" fill="#145a32">'approved' / 'rejected'</text>
+
+<!-- event_messages -->
+<rect x="648" y="1138" width="196" height="56" rx="6" fill="#d5f5e3" stroke="#27ae60" stroke-width="1.5"/>
+<text x="746" y="1155" text-anchor="middle" font-size="10" font-weight="700" fill="#145a32">🗄 event_messages</text>
+<text x="746" y="1169" text-anchor="middle" font-size="10" fill="#145a32">INSERT (user_id, content,</text>
+<text x="746" y="1183" text-anchor="middle" font-size="10" fill="#145a32">type, file_url)</text>
+
+<!-- connections INSERT -->
+<rect x="648" y="1248" width="196" height="56" rx="6" fill="#d5f5e3" stroke="#27ae60" stroke-width="1.5"/>
+<text x="746" y="1265" text-anchor="middle" font-size="10" font-weight="700" fill="#145a32">🗄 connections</text>
+<text x="746" y="1279" text-anchor="middle" font-size="10" fill="#145a32">INSERT (requester_id,</text>
+<text x="746" y="1293" text-anchor="middle" font-size="10" fill="#145a32">receiver_id, 'pending')</text>
+
+<!-- connections UPDATE accepted -->
+<rect x="648" y="1306" width="196" height="46" rx="6" fill="#d5f5e3" stroke="#27ae60" stroke-width="1.5"/>
+<text x="746" y="1323" text-anchor="middle" font-size="10" font-weight="700" fill="#145a32">🗄 connections</text>
+<text x="746" y="1337" text-anchor="middle" font-size="10" fill="#145a32">UPDATE status =</text>
+<text x="746" y="1349" text-anchor="middle" font-size="10" fill="#145a32">'accepted'</text>
+
+<!-- connection_messages -->
+<rect x="648" y="1416" width="196" height="56" rx="6" fill="#d5f5e3" stroke="#27ae60" stroke-width="1.5"/>
+<text x="746" y="1433" text-anchor="middle" font-size="10" font-weight="700" fill="#145a32">🗄 connection_messages</text>
+<text x="746" y="1447" text-anchor="middle" font-size="10" fill="#145a32">INSERT (sender_id,</text>
+<text x="746" y="1461" text-anchor="middle" font-size="10" fill="#145a32">message, file_url)</text>
+
+<!-- user_sports UPDATE -->
+<rect x="648" y="1476" width="196" height="56" rx="6" fill="#d5f5e3" stroke="#27ae60" stroke-width="1.5"/>
+<text x="746" y="1493" text-anchor="middle" font-size="10" font-weight="700" fill="#145a32">🗄 user_sports</text>
+<text x="746" y="1507" text-anchor="middle" font-size="10" fill="#145a32">INSERT/UPDATE</text>
+<text x="746" y="1521" text-anchor="middle" font-size="10" fill="#145a32">(skill, schedule, days)</text>
+
+<!-- chat_sessions + chat_messages -->
+<rect x="648" y="1596" width="196" height="56" rx="6" fill="#d5f5e3" stroke="#27ae60" stroke-width="1.5"/>
+<text x="746" y="1613" text-anchor="middle" font-size="10" font-weight="700" fill="#145a32">🗄 chat_sessions</text>
+<text x="746" y="1627" text-anchor="middle" font-size="10" fill="#145a32">INSERT session</text>
+<text x="746" y="1641" text-anchor="middle" font-size="10" fill="#145a32">+ chat_messages</text>
+
+<!-- Gemini external -->
+<rect x="648" y="1664" width="196" height="56" rx="6" fill="#e8daef" stroke="#8e44ad" stroke-width="1.5"/>
+<text x="746" y="1681" text-anchor="middle" font-size="10" font-weight="700" fill="#6c3483">🤖 Gemini 2.5 Flash API</text>
+<text x="746" y="1695" text-anchor="middle" font-size="10" fill="#6c3483">RAG: cosine-sim</text>
+<text x="746" y="1709" text-anchor="middle" font-size="10" fill="#6c3483">chunks.json top-5</text>
+
+<!-- user_reviews -->
+<rect x="648" y="1713" width="196" height="56" rx="6" fill="#d5f5e3" stroke="#27ae60" stroke-width="1.5"/>
+<text x="746" y="1730" text-anchor="middle" font-size="10" font-weight="700" fill="#145a32">🗄 user_reviews</text>
+<text x="746" y="1744" text-anchor="middle" font-size="10" fill="#145a32">INSERT (reviewer_id,</text>
+<text x="746" y="1758" text-anchor="middle" font-size="10" fill="#145a32">reviewed_id, rating)</text>
+
+<!-- session destroy -->
+<rect x="648" y="1769" width="196" height="36" rx="6" fill="#d5f5e3" stroke="#27ae60" stroke-width="1.5"/>
+<text x="746" y="1786" text-anchor="middle" font-size="10" font-weight="700" fill="#145a32">🗄 sessions</text>
+<text x="746" y="1800" text-anchor="middle" font-size="10" fill="#145a32">DESTROY (logout)</text>
+
+<!-- Admin DB interactions -->
+<rect x="648" y="298" width="196" height="56" rx="6" fill="#d5f5e3" stroke="#27ae60" stroke-width="1.5"/>
+<text x="746" y="315" text-anchor="middle" font-size="10" font-weight="700" fill="#145a32">🗄 users / venues /</text>
+<text x="746" y="329" text-anchor="middle" font-size="10" fill="#145a32">events / sports</text>
+<text x="746" y="343" text-anchor="middle" font-size="10" fill="#145a32">CRUD via Filament</text>
+
+<!-- venues (geocode) -->
+<rect x="648" y="356" width="196" height="46" rx="6" fill="#d5f5e3" stroke="#27ae60" stroke-width="1.5"/>
+<text x="746" y="373" text-anchor="middle" font-size="10" font-weight="700" fill="#145a32">🗄 venues</text>
+<text x="746" y="387" text-anchor="middle" font-size="10" fill="#145a32">UPDATE lat, lng</text>
+<text x="746" y="400" text-anchor="middle" font-size="10" fill="#145a32">(Pinpoint / geocode cmd)</text>
+
+<!-- ══ LEGEND ══ -->
+<rect x="10" y="1900" width="840" height="110" fill="#f8f9fa" stroke="#ccc" stroke-width="1"/>
+<text x="430" y="1920" text-anchor="middle" font-size="12" font-weight="700" fill="#1a1a2e">LEGEND</text>
+
+<circle cx="50" cy="1945" r="10" fill="#aed6f1" stroke="#2980b9" stroke-width="2"/>
+<text x="70" y="1950" font-size="11" fill="#333">Start Node</text>
+
+<circle cx="160" cy="1945" r="10" fill="none" stroke="#1a1a2e" stroke-width="3"/>
+<circle cx="160" cy="1945" r="5" fill="#1a1a2e"/>
+<text x="180" y="1950" font-size="11" fill="#333">End Node</text>
+
+<rect x="270" y="1935" width="80" height="22" rx="6" fill="#d6eaf8" stroke="#2980b9" stroke-width="1.5"/>
+<text x="310" y="1950" text-anchor="middle" font-size="10" fill="#1a1a2e">Process</text>
+
+<polygon points="430,1935 455,1947 430,1959 405,1947" fill="#d6eaf8" stroke="#2980b9" stroke-width="1.5"/>
+<text x="480" y="1952" font-size="11" fill="#333">Decision</text>
+
+<rect x="560" y="1935" width="80" height="22" rx="6" fill="#d5f5e3" stroke="#27ae60" stroke-width="1.5"/>
+<text x="600" y="1950" text-anchor="middle" font-size="10" fill="#145a32">🗄 DB Table</text>
+
+<rect x="700" y="1935" width="80" height="22" rx="6" fill="#e8daef" stroke="#8e44ad" stroke-width="1.5"/>
+<text x="740" y="1950" text-anchor="middle" font-size="10" fill="#6c3483">External API</text>
+
+<line x1="30" y1="1985" x2="80" y2="1985" stroke="#444" stroke-width="1.5" marker-end="url(#arr)"/>
+<text x="90" y="1990" font-size="11" fill="#333">Flow / Transition</text>
+
+<line x1="230" y1="1985" x2="280" y2="1985" stroke="#444" stroke-width="1" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+<text x="290" y="1990" font-size="11" fill="#333">DB Interaction (cross-lane)</text>
+
+</svg>
+</div>
+</body>
+</html>

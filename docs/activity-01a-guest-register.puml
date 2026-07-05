@@ -1,0 +1,32 @@
+@startuml activity-01a-guest-register
+title Guest - Registrasi & Login
+skinparam activity {
+  BackgroundColor #ECEFF1
+  BorderColor #455A64
+  FontName Arial
+  FontSize 11
+  DiamondBackgroundColor #CFD8DC
+  DiamondBorderColor #455A64
+  ArrowColor #37474F
+}
+
+|Guest|
+start
+:Buka Landing Page;
+:Klik "Get Started" / Register;
+:Isi form registrasi;
+
+|System|
+if (Data valid?) then (ya)
+  :Buat akun & auto-login;
+  |Guest|
+  :Masuk ke Dashboard;
+  stop
+else (tidak)
+  :Tampilkan error validasi;
+  |Guest|
+  :Kembali ke form;
+  stop
+endif
+
+@enduml

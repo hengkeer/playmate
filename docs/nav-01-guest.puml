@@ -1,0 +1,29 @@
+@startuml nav-01-guest
+top to bottom direction
+skinparam monochrome true
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam defaultTextAlignment center
+skinparam BackgroundColor white
+title PlayMate - Navigation Structure (Guest / Unauthenticated)
+
+component "Landing Page" as Landing
+
+component "Browse Events" as BrowseEvents
+component "Event Detail" as GuestEventDetail
+component "Register" as Register
+component "Login" as Login
+component "Player Profile (View)" as GuestProfile
+component "Venue List" as VenueList
+component "Venue Detail" as GuestVenueDetail
+
+Landing --> BrowseEvents
+Landing --> Register
+Landing --> GuestProfile
+Landing --> VenueList
+
+BrowseEvents --> GuestEventDetail
+GuestProfile --> Login : Connect
+VenueList --> GuestVenueDetail
+
+@enduml
