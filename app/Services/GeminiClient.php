@@ -24,6 +24,8 @@ class GeminiClient
     {
         $endpoint = "/v1beta/models/{$this->embeddingModel}:embedContent";
 
+        $text = $this->ensureUtf8($text);
+
         $body = [
             'content'              => ['parts' => [['text' => $text]]],
             'outputDimensionality' => 768,
@@ -32,6 +34,15 @@ class GeminiClient
         $data = $this->post($endpoint, $body);
 
         return $data['embedding']['values'] ?? throw new GeminiException('Empty embedding response');
+    }
+
+    protected function ensureUtf8(string $text): string
+    {
+        if (mb_check_encoding($text, 'UTF-8')) {
+            return $text;
+        }
+
+        return mb_convert_encoding($text, 'UTF-8', 'Windows-1252');
     }
 
     /**
