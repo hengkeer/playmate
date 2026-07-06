@@ -1,0 +1,1018 @@
+[
+    {
+        "text": "# Navigation Structure — PlayMate\n\n> File: `docs\/06-navigation-structure.md`\n> Purpose: Describes all navigation paths, page hierarchy, and routing for each user role.\n\n---",
+        "source": "docs\/06-navigation-structure.md#navigation-structure-playmate"
+    },
+    {
+        "text": "## 1. Guest (Unauthenticated)\n\n---",
+        "source": "docs\/06-navigation-structure.md#1-guest-unauthenticated"
+    },
+    {
+        "text": "## 2. Player (Authenticated User)\n\nAll Guest routes are accessible, plus:\n\n### 2.1 Dashboard & Matchmaking\n\n### 2.2 Profile\n\n### 2.3 Connections\n\n### 2.4 Events\n\n### 2.5 My Events\n\n### 2.6 Reviews\n\nReviews are also visible on:\n- `\/players\/{id}` (public player profile)\n\n### 2.7 Venues (same as Guest, plus)\n\n### 2.8 AI Assistant (Chatbot)\n\nAlso reachable via a floating widget (`<x-chatbot-launcher \/>`) injected into every authenticated page, not just `\/chat`. Rate-limited to 30 messages \/ 10 min per user. See `docs\/features.md` §16.\n\n---",
+        "source": "docs\/06-navigation-structure.md#2-player-authenticated-user"
+    },
+    {
+        "text": "## 3. Host (Player + Event Creation)\n\nHost inherits all Player routes plus:\n\n---",
+        "source": "docs\/06-navigation-structure.md#3-host-player-event-creation"
+    },
+    {
+        "text": "## 4. Admin (Filament Panel)\n\n### Admin Resources (auto-discovered from `app\/Filament\/Resources\/`)\n\n| Resource | Path |\n|---|---|\n| UserResource | `\/admin\/users` |\n| SportResource | `\/admin\/sports` |\n| VenueResource | `\/admin\/venues` |\n| EventResource | `\/admin\/events` |\n| ConnectionResource | `\/admin\/connections` |\n| ReviewResource | `\/admin\/reviews` |\n| (others) | `\/admin\/...` |\n\nEach resource supports: List, Create, Edit, Delete.\n\n---",
+        "source": "docs\/06-navigation-structure.md#4-admin-filament-panel"
+    },
+    {
+        "text": "## 5. Navigation Summary Matrix\n\n| Feature | Guest | Player | Host | Admin |\n|---|---|---|---|---|\n| Landing page | ✅ | ✅ | ✅ | ✅ |\n| Register \/ Login | ✅ | ✅ | ✅ | ✅ |\n| Browse Events | ✅ | ✅ | ✅ | — |\n| Event Detail | ✅ | ✅ | ✅ | — |\n| Browse Venues | ✅ | ✅ | ✅ | ✅ |\n| Venue Detail | ✅ | ✅ | ✅ | ✅ |\n| View Player Profile | ✅ | ✅ | ✅ | — |\n| Matchmaking | — | ✅ | ✅ | — |\n| My Connections | — | ✅ | ✅ | — |\n| Create \/ Join \/ Leave Event | — | ✅ | ✅ | — |\n| Create Event | — | ✅ | ✅ | — |\n| Manage Host Requests | — | — | ✅ | — |\n| Event Group Chat | — | ✅ | ✅ | — |\n| Private Chat | — | ✅ | ✅ | — |\n| Write Review | — | ✅ | ✅ | — |\n| Manage Profile | — | ✅ | ✅ | — |\n| AI Assistant (Chatbot) | — | ✅ | ✅ | — |\n| Admin Panel | — | — | — | ✅ |",
+        "source": "docs\/06-navigation-structure.md#5-navigation-summary-matrix"
+    },
+    {
+        "text": "# Architecture\n\n> PlayMate — Smart Sports Matchmaking Platform\n> Last updated: July 2026\n\n---",
+        "source": "docs\/architecture.md#architecture"
+    },
+    {
+        "text": "## 1. Project Overview\n\n**Purpose:** Connect sports players for matches via rule-based AI matchmaking, event hosting with group chat, venue discovery, private messaging, and user ratings. (Similar to Reclub \/ Playtomic)\n\n**Demo Login:**\n- Email: `rizky@example.com`\n- Password: `password`\n\n---",
+        "source": "docs\/architecture.md#1-project-overview"
+    },
+    {
+        "text": "## 2. Tech Stack\n\n| Package | Version |\n|---|---|\n| PHP | ^8.2 |\n| Laravel | ^12.0 |\n| Filament | ^5.5 |\n| Filament Pinpoint | ^1.1 |\n| Carbon | ^3 (bundled with Laravel) |\n| Tailwind CSS | CDN (cdn.tailwindcss.com) |\n| Database | MySQL 8.x |\n\n---",
+        "source": "docs\/architecture.md#2-tech-stack"
+    },
+    {
+        "text": "## 3. Folder Structure\n\n---",
+        "source": "docs\/architecture.md#3-folder-structure"
+    },
+    {
+        "text": "## 4. Critical Anti-Regression Rules\n\n⚠️ **Never access `$sport->skill_levels` directly in Blade.**\nAlways use `$sport->getSkillLevels()` instead. See `docs\/models.md`.\n\n⚠️ **Distance scoring in SQL is not used.**\nDistance filter is applied in PHP via `User::distanceFromUser()` (Haversine formula) after fetching candidates from MySQL. See `docs\/matchmaking-algorithm.md`.\n\n⚠️ **`acceptedConnections()` must NOT use `hasMany`.**\n`hasMany` prepends `user_id = $id` which breaks the OR logic. Use static `Connection::where()` builder. See `docs\/models.md`.\n\n⚠️ **Label lookups use `value` key, not array index.**\nAlways match by `{value: N, name: \"...\"}` key — not by numeric array position. See `docs\/models.md` and `docs\/matchmaking-algorithm.md`.\n\n⚠️ **Radius filter runs in PHP, not SQL.**\nFilter ",
+        "source": "docs\/architecture.md#4-critical-anti-regression-rules:chunk-0"
+    },
+    {
+        "text": "()` must NOT use `hasMany`.**\n`hasMany` prepends `user_id = $id` which breaks the OR logic. Use static `Connection::where()` builder. See `docs\/models.md`.\n\n⚠️ **Label lookups use `value` key, not array index.**\nAlways match by `{value: N, name: \"...\"}` key — not by numeric array position. See `docs\/models.md` and `docs\/matchmaking-algorithm.md`.\n\n⚠️ **Radius filter runs in PHP, not SQL.**\nFilter in `MatchmakingService` via `User::distanceFromUser()` after fetching candidates. See `docs\/matchmaking-algorithm.md`.\n\n⚠️ **Challenge invites vs. join requests are distinguished by `is_invite` flag.**\nOnly the challenged player can respond to challenge invites (`is_invite=true`). Host approval queue only shows `is_invite=false` entries. See `docs\/features.md`.\n\n⚠️ **N+1 prevention — always eager ",
+        "source": "docs\/architecture.md#4-critical-anti-regression-rules:chunk-1"
+    },
+    {
+        "text": "in `MatchmakingService` via `User::distanceFromUser()` after fetching candidates. See `docs\/matchmaking-algorithm.md`.\n\n⚠️ **Challenge invites vs. join requests are distinguished by `is_invite` flag.**\nOnly the challenged player can respond to challenge invites (`is_invite=true`). Host approval queue only shows `is_invite=false` entries. See `docs\/features.md`.\n\n⚠️ **N+1 prevention — always eager load relations.**\nMatchmakingController preloads: `userSports.sport`, `userSports`, `joinedEvents.sport`, `reviewsReceived.reviewer`. Never query inside loops. See `docs\/controllers.md`.\n\n⚠️ **Sports editor validation: use `nullable` not `required`.**\n`ProfileController` uses `nullable` for `sports.*.sport_id` to allow empty rows.\n\n---",
+        "source": "docs\/architecture.md#4-critical-anti-regression-rules:chunk-2"
+    },
+    {
+        "text": "load relations.**\nMatchmakingController preloads: `userSports.sport`, `userSports`, `joinedEvents.sport`, `reviewsReceived.reviewer`. Never query inside loops. See `docs\/controllers.md`.\n\n⚠️ **Sports editor validation: use `nullable` not `required`.**\n`ProfileController` uses `nullable` for `sports.*.sport_id` to allow empty rows.\n\n---",
+        "source": "docs\/architecture.md#4-critical-anti-regression-rules:chunk-3"
+    },
+    {
+        "text": "## 5. Coding Conventions\n\n### Skill Levels\n- Always access via `Sport::getSkillLevels()`, `Sport::getSkillLabel()`, `Sport::normalizeSkill()`\n- Store `skill_value` (human-readable string) and `skill_number` (normalized 1–10 int)\n- Normalize using: `(value - 1) \/ (maxValue - 1) * 9 + 1`, clamped to 1–10\n\n### Avatar Upload\n- Storage path: `storage\/app\/public\/avatars\/`\n- Accessed via Laravel's `Storage` facade\n\n### Chat File Uploads\n- Storage path: `storage\/app\/public\/chat-files\/`\n- No mime\/size validation yet (see known issues)\n\n### Map Picker Component\n- Component: `resources\/views\/components\/map-picker.blade.php`\n- Uses Leaflet `L` global — Leaflet JS must load before Alpine in `<head>`\n- Coordinate fields: hidden form inputs — never exposed as raw numbers\n\n---",
+        "source": "docs\/architecture.md#5-coding-conventions"
+    },
+    {
+        "text": "## 6. Pointer to Detailed Docs\n\n| Topic | File |\n|---|---|\n| Models & relationships | `docs\/models.md` |\n| Database schema & migrations | `docs\/database-schema.md` |\n| Matchmaking algorithm (v2) | `docs\/matchmaking-algorithm.md` |\n| Controllers & methods | `docs\/controllers.md` |\n| Routes | `docs\/routes.md` |\n| Views & templates | `docs\/views.md` |\n| Feature explanations | `docs\/features.md` |\n| Filament admin panel | `docs\/filament.md` |\n| Known issues & technical debt | `docs\/known-issues.md` |\n| Feature changelog & bug history | `docs\/changelog.md` |\n| Seeded data reference | `docs\/seeded-data.md` |\n| Next steps & roadmap | `docs\/roadmap.md` |",
+        "source": "docs\/architecture.md#6-pointer-to-detailed-docs"
+    },
+    {
+        "text": "# Changelog — Bug Fixes & Feature Updates\n\n> PlayMate — All resolved bugs, fixes, and feature additions\n> Last updated: June 2026\n\n---",
+        "source": "docs\/changelog.md#changelog-bug-fixes-feature-updates"
+    },
+    {
+        "text": "## June 2026 — Week 4 (continued): Profile Sports, Matchmaking Filter Fixes\n\n### Profile — Sports Editor: Multiple Sports Now Addable\n\n**Bug:** `@forelse\/@empty` split meant users with ≥1 sport only saw their existing rows — no empty slot to add a second sport. Users with 1 sport (e.g. Tennis) could not add Badminton.\n\n**Fix:** Replaced `@forelse\/@empty` with two explicit loops:\n1. Loop existing `userSports` rows (pre-filled)\n2. Loop empty rows to fill up to 3 total (`$emptyCount = 3 - existing count`)\n\n| State | Before | After |\n|---|---|---|\n| 0 sports | 3 empty rows | 3 empty rows |\n| 1 sport | 1 filled row, no empty | 1 filled + 2 empty |\n| 2 sports | 2 filled rows, no empty | 2 filled + 1 empty |\n| 3 sports | 3 filled rows | 3 filled rows |\n\nEmpty slot placeholder text: \"Select sport.",
+        "source": "docs\/changelog.md#june-2026-week-4-continued-profile-sports-matchmaking-filter-fixes:chunk-0"
+    },
+    {
+        "text": "userSports` rows (pre-filled)\n2. Loop empty rows to fill up to 3 total (`$emptyCount = 3 - existing count`)\n\n| State | Before | After |\n|---|---|---|\n| 0 sports | 3 empty rows | 3 empty rows |\n| 1 sport | 1 filled row, no empty | 1 filled + 2 empty |\n| 2 sports | 2 filled rows, no empty | 2 filled + 1 empty |\n| 3 sports | 3 filled rows | 3 filled rows |\n\nEmpty slot placeholder text: \"Select sport...\" (first slot) \/ \"Add another sport (optional)\" (subsequent).\n\n---\n\n### Matchmaking — Non-Primary Sport Filter Fixes\n\n#### Sport Score: Non-Primary Filter No Longer Returns 0.0\n\n**Bug:** `calculateSportScore()` returned `0.0` if the searcher didn't have the filtered sport as any of their sports. When searching Padel as a Tennis-primary user, all Padel opponents received sport score = 0.0, making",
+        "source": "docs\/changelog.md#june-2026-week-4-continued-profile-sports-matchmaking-filter-fixes:chunk-1"
+    },
+    {
+        "text": "..\" (first slot) \/ \"Add another sport (optional)\" (subsequent).\n\n---\n\n### Matchmaking — Non-Primary Sport Filter Fixes\n\n#### Sport Score: Non-Primary Filter No Longer Returns 0.0\n\n**Bug:** `calculateSportScore()` returned `0.0` if the searcher didn't have the filtered sport as any of their sports. When searching Padel as a Tennis-primary user, all Padel opponents received sport score = 0.0, making ranking based purely on distance\/activity.\n\n**Fix:** When `sport_id` filter is set, sport score now reflects primary\/secondary placement:\n\n| Condition | Score |\n|---|---|\n| Both have filtered sport as primary | 1.0 |\n| Either has filtered sport as primary | 0.75 |\n| Searcher has it as secondary | 0.5 |\n| Searcher doesn't play it at all | 0.35 |\n\n#### Card Display: Filtered Sport Shown First\n\n**Bu",
+        "source": "docs\/changelog.md#june-2026-week-4-continued-profile-sports-matchmaking-filter-fixes:chunk-2"
+    },
+    {
+        "text": " ranking based purely on distance\/activity.\n\n**Fix:** When `sport_id` filter is set, sport score now reflects primary\/secondary placement:\n\n| Condition | Score |\n|---|---|\n| Both have filtered sport as primary | 1.0 |\n| Either has filtered sport as primary | 0.75 |\n| Searcher has it as secondary | 0.5 |\n| Searcher doesn't play it at all | 0.35 |\n\n#### Card Display: Filtered Sport Shown First\n\n**Bug:** `$opp->sports->take(3)` displayed sports in default order (primary first). A Tennis-primary\/Padel-secondary player appeared to be a \"Tennis player\" when found via Padel filter.\n\n**Fix:** When `$filters['sport_id']` is set, the matching sport is sorted to the front and highlighted in orange. Other sports remain grey.\n\n#### Reveal Overlay: Threshold Adjusted for Non-Primary Sport\n\n**Bug:** `$sp",
+        "source": "docs\/changelog.md#june-2026-week-4-continued-profile-sports-matchmaking-filter-fixes:chunk-3"
+    },
+    {
+        "text": "g:** `$opp->sports->take(3)` displayed sports in default order (primary first). A Tennis-primary\/Padel-secondary player appeared to be a \"Tennis player\" when found via Padel filter.\n\n**Fix:** When `$filters['sport_id']` is set, the matching sport is sorted to the front and highlighted in orange. Other sports remain grey.\n\n#### Reveal Overlay: Threshold Adjusted for Non-Primary Sport\n\n**Bug:** `$sportScore >= 1.0` threshold was never reachable for non-primary sport filters (max 0.75). Also total score threshold of 0.75 was unreachable since sport component is capped at 0.75 × 0.30 = 0.225 instead of 0.30.\n\n**Fix:** Detect whether the filtered sport differs from the searcher's primary sport, and apply lower thresholds:\n\n| Threshold | Primary sport filter | Non-primary sport filter |\n|---|---",
+        "source": "docs\/changelog.md#june-2026-week-4-continued-profile-sports-matchmaking-filter-fixes:chunk-4"
+    },
+    {
+        "text": "ortScore >= 1.0` threshold was never reachable for non-primary sport filters (max 0.75). Also total score threshold of 0.75 was unreachable since sport component is capped at 0.75 × 0.30 = 0.225 instead of 0.30.\n\n**Fix:** Detect whether the filtered sport differs from the searcher's primary sport, and apply lower thresholds:\n\n| Threshold | Primary sport filter | Non-primary sport filter |\n|---|---|---|\n| Total score | >= 0.75 | >= 0.55 |\n| Sport score | >= 0.75 | >= 0.75 |\n| Strong factors | >= 2 or mutual | >= 1 or mutual |\n\n`userPrimarySport` detected via `$user->userSports->sortBy('id')->first()?->sport_id`.\n\n---",
+        "source": "docs\/changelog.md#june-2026-week-4-continued-profile-sports-matchmaking-filter-fixes:chunk-5"
+    },
+    {
+        "text": "|---|\n| Total score | >= 0.75 | >= 0.55 |\n| Sport score | >= 0.75 | >= 0.75 |\n| Strong factors | >= 2 or mutual | >= 1 or mutual |\n\n`userPrimarySport` detected via `$user->userSports->sortBy('id')->first()?->sport_id`.\n\n---",
+        "source": "docs\/changelog.md#june-2026-week-4-continued-profile-sports-matchmaking-filter-fixes:chunk-6"
+    },
+    {
+        "text": "## June 2026 — Week 4: Data Fixes, UX Polish & Emoji Cleanup\n\n### Venue Data Corrections (DB)\n\n**Sport type swap fixed:** Venues 1–10 (Tennis names) had `sport_id=2` (Badminton); venues 11–15 (Badminton names) had `sport_id=1` (Tennis). Root cause: seeder assigned IDs in wrong order.\n\n| Fix | Detail |\n|---|---|\n| Venues 1–10 | `sport_id` corrected to `1` (Tennis) |\n| Venues 11–15 | `sport_id` corrected to `2` (Badminton) |\n| Venues 16–19 | Already correct (Padel) |\n\n**Addresses fixed:** 5 venues had empty `address`, several had duplicate city suffix, one had typo.\n\n| ID | Venue | Fix |\n|---|---|---|\n| 4 | GOAT Tennis Arena | Address filled: Jl. Pondok Betung Raya No. 9A, Pondok Aren |\n| 7 | Maison Tennis Playcourt | Address filled: Jl. Taman Makam Bahagia No.164, Parigi |\n| 9 | Armor Tenni",
+        "source": "docs\/changelog.md#june-2026-week-4-data-fixes-ux-polish-emoji-cleanup:chunk-0"
+    },
+    {
+        "text": "ected to `2` (Badminton) |\n| Venues 16–19 | Already correct (Padel) |\n\n**Addresses fixed:** 5 venues had empty `address`, several had duplicate city suffix, one had typo.\n\n| ID | Venue | Fix |\n|---|---|---|\n| 4 | GOAT Tennis Arena | Address filled: Jl. Pondok Betung Raya No. 9A, Pondok Aren |\n| 7 | Maison Tennis Playcourt | Address filled: Jl. Taman Makam Bahagia No.164, Parigi |\n| 9 | Armor Tennis Outdoor | Address filled: Jl. Mutiara 3 No. 105, Serpong Utara |\n| 10 | RR Tennis Court | Address filled: Modern Hill, Pondok Cabe Udik, Pamulang |\n| 17 | Gas Padel Court | Address filled: Jl. Aria Putra No. 76, Ciputat |\n| 5,6,8,12–16,18,19 | Multiple | Removed duplicate \"Kota Tangerang Selatan Banten\" suffix from address string |\n| 15 | Hall Badminton Merpati | Fixed typo: \"Kota tangerang seka",
+        "source": "docs\/changelog.md#june-2026-week-4-data-fixes-ux-polish-emoji-cleanup:chunk-1"
+    },
+    {
+        "text": "s Outdoor | Address filled: Jl. Mutiara 3 No. 105, Serpong Utara |\n| 10 | RR Tennis Court | Address filled: Modern Hill, Pondok Cabe Udik, Pamulang |\n| 17 | Gas Padel Court | Address filled: Jl. Aria Putra No. 76, Ciputat |\n| 5,6,8,12–16,18,19 | Multiple | Removed duplicate \"Kota Tangerang Selatan Banten\" suffix from address string |\n| 15 | Hall Badminton Merpati | Fixed typo: \"Kota tangerang sekarang\" → \"Kota Tangerang Selatan\" |\n\nVenue count in `seeded-data.md` updated: 9 → 19 (10 tennis, 5 badminton, 4 padel).\n\n---\n\n### \"Host an Event Here\" → Pre-fill Fix\n\n**Bug:** Clicking \"Host an Event Here\" on `venues\/show` passed `?venue_id=X` but the create form ignored it — venue name was blank, map stayed at default Jakarta coords, sport was unset.\n\n**Fix:**\n\n| File | Change |\n|---|---|\n| `Event",
+        "source": "docs\/changelog.md#june-2026-week-4-data-fixes-ux-polish-emoji-cleanup:chunk-2"
+    },
+    {
+        "text": "rang\" → \"Kota Tangerang Selatan\" |\n\nVenue count in `seeded-data.md` updated: 9 → 19 (10 tennis, 5 badminton, 4 padel).\n\n---\n\n### \"Host an Event Here\" → Pre-fill Fix\n\n**Bug:** Clicking \"Host an Event Here\" on `venues\/show` passed `?venue_id=X` but the create form ignored it — venue name was blank, map stayed at default Jakarta coords, sport was unset.\n\n**Fix:**\n\n| File | Change |\n|---|---|\n| `EventController::create()` | Resolves `?venue_id` via `Venue::find()`, passes `$venue` to view |\n| `events\/create.blade.php` | Passes `$venue->name`, `$venue->latitude`, `$venue->longitude` as props to `<x-venue-picker>` |\n| `events\/create.blade.php` | Sport dropdown auto-selects `$venue->sport_id` when coming from venue page |\n| `venue-picker` component | Added `selectedLat` + `selectedLng` props; `x-",
+        "source": "docs\/changelog.md#june-2026-week-4-data-fixes-ux-polish-emoji-cleanup:chunk-3"
+    },
+    {
+        "text": "Controller::create()` | Resolves `?venue_id` via `Venue::find()`, passes `$venue` to view |\n| `events\/create.blade.php` | Passes `$venue->name`, `$venue->latitude`, `$venue->longitude` as props to `<x-venue-picker>` |\n| `events\/create.blade.php` | Sport dropdown auto-selects `$venue->sport_id` when coming from venue page |\n| `venue-picker` component | Added `selectedLat` + `selectedLng` props; `x-init` dispatches `playmate:venue-selected` so map pans immediately on page load |\n\n---\n\n### Upcoming Events — Landing Page Fix & Redesign\n\n**Bug:** Query used `event_date` column (does not exist); correct column is `start_time`. Section was always empty.\n\n**Redesign:** Removed photo placeholder, added sport badge, proper date block, no emojis.\n\n| Change | Detail |\n|---|---|\n| Column fix | `where('",
+        "source": "docs\/changelog.md#june-2026-week-4-data-fixes-ux-polish-emoji-cleanup:chunk-4"
+    },
+    {
+        "text": "init` dispatches `playmate:venue-selected` so map pans immediately on page load |\n\n---\n\n### Upcoming Events — Landing Page Fix & Redesign\n\n**Bug:** Query used `event_date` column (does not exist); correct column is `start_time`. Section was always empty.\n\n**Redesign:** Removed photo placeholder, added sport badge, proper date block, no emojis.\n\n| Change | Detail |\n|---|---|\n| Column fix | `where('event_date', ...)` → `where('start_time', '>=', now())` |\n| Eager load | Added `->with('sport')` |\n| Card header | Date block (month label + day number) + sport badge (right) |\n| Card body | Title, venue name, 2-line description |\n| Card footer | Players count (`N \/ max`) + \"View Event →\" |\n| Empty state | \"No upcoming events right now\" + \"Host the First One\" button |\n\n---\n\n### Events Index — Hide",
+        "source": "docs\/changelog.md#june-2026-week-4-data-fixes-ux-polish-emoji-cleanup:chunk-5"
+    },
+    {
+        "text": "event_date', ...)` → `where('start_time', '>=', now())` |\n| Eager load | Added `->with('sport')` |\n| Card header | Date block (month label + day number) + sport badge (right) |\n| Card body | Title, venue name, 2-line description |\n| Card footer | Players count (`N \/ max`) + \"View Event →\" |\n| Empty state | \"No upcoming events right now\" + \"Host the First One\" button |\n\n---\n\n### Events Index — Hide Past Events\n\n**Change:** `EventController::index()` previously showed events from 90 days in the past (`subDays(90)`) to allow the page to appear non-empty with old seeded data. Now filters to upcoming only.\n\n| Before | After |\n|---|---|\n| `where('start_time', '>=', now()->subDays(90))` + upper bound | `where('start_time', '>=', now())` |\n\n---\n\n### Profile — Skill Level Dropdown Fix\n\n**Bug 1:** I",
+        "source": "docs\/changelog.md#june-2026-week-4-data-fixes-ux-polish-emoji-cleanup:chunk-6"
+    },
+    {
+        "text": " Past Events\n\n**Change:** `EventController::index()` previously showed events from 90 days in the past (`subDays(90)`) to allow the page to appear non-empty with old seeded data. Now filters to upcoming only.\n\n| Before | After |\n|---|---|\n| `where('start_time', '>=', now()->subDays(90))` + upper bound | `where('start_time', '>=', now())` |\n\n---\n\n### Profile — Skill Level Dropdown Fix\n\n**Bug 1:** In existing sport rows, the sport `<select>` had no `onchange` — changing sport did not update skill level options.\n\n**Bug 2:** In empty (new) sport rows, skill levels used an `<optgroup>` hack — `<optgroup label=\"...\">` elements were shown as non-selectable headers but could still be clicked in some browsers. Options from other sports remained visible even when \"disabled\".\n\n**Bug 3:** Placeholder ",
+        "source": "docs\/changelog.md#june-2026-week-4-data-fixes-ux-polish-emoji-cleanup:chunk-7"
+    },
+    {
+        "text": "n existing sport rows, the sport `<select>` had no `onchange` — changing sport did not update skill level options.\n\n**Bug 2:** In empty (new) sport rows, skill levels used an `<optgroup>` hack — `<optgroup label=\"...\">` elements were shown as non-selectable headers but could still be clicked in some browsers. Options from other sports remained visible even when \"disabled\".\n\n**Bug 3:** Placeholder \"Level\" option was selectable (no `disabled` attribute).\n\n**Fix:** Replaced optgroup approach with JS-driven dynamic rebuild.\n\n| Change | Detail |\n|---|---|\n| `SPORT_LEVELS` JS object | All sports' skill levels embedded as JSON via `@json($sportsList->mapWithKeys(...))` |\n| `rebuildSkillLevels(sportSelect)` | Clears and rebuilds the skill level `<select>` from `SPORT_LEVELS[sportId]` on every spor",
+        "source": "docs\/changelog.md#june-2026-week-4-data-fixes-ux-polish-emoji-cleanup:chunk-8"
+    },
+    {
+        "text": "\"Level\" option was selectable (no `disabled` attribute).\n\n**Fix:** Replaced optgroup approach with JS-driven dynamic rebuild.\n\n| Change | Detail |\n|---|---|\n| `SPORT_LEVELS` JS object | All sports' skill levels embedded as JSON via `@json($sportsList->mapWithKeys(...))` |\n| `rebuildSkillLevels(sportSelect)` | Clears and rebuilds the skill level `<select>` from `SPORT_LEVELS[sportId]` on every sport change |\n| Both row types | `onchange=\"rebuildSkillLevels(this)\"` added to sport selects in both existing and empty rows |\n| Placeholder | `<option value=\"\" disabled>Level<\/option>` — not selectable |\n| Existing rows | Pre-select by `skill_number` value match (not `skill_value` string) |\n\n---\n\n### Emoji Cleanup — All Blade Views\n\nAll decorative\/alay emojis removed from Blade templates. Functiona",
+        "source": "docs\/changelog.md#june-2026-week-4-data-fixes-ux-polish-emoji-cleanup:chunk-9"
+    },
+    {
+        "text": "t change |\n| Both row types | `onchange=\"rebuildSkillLevels(this)\"` added to sport selects in both existing and empty rows |\n| Placeholder | `<option value=\"\" disabled>Level<\/option>` — not selectable |\n| Existing rows | Pre-select by `skill_number` value match (not `skill_value` string) |\n\n---\n\n### Emoji Cleanup — All Blade Views\n\nAll decorative\/alay emojis removed from Blade templates. Functional characters (`★` for ratings\/CTA, `✓`\/`✕` for approve\/decline) retained.\n\n| File | Removed |\n|---|---|\n| `profile.blade.php` | `$sport->icon` (🎾\/🏸\/🟡) in sport select options |\n| `connections\/index.blade.php` | 🤝 empty-state, `$sport->icon` in sport list |\n| `events\/create.blade.php` | ⚔ in \"Challenging\" label and \"Send Challenge\" button |\n| `host-game.blade.php` | ⚔ in \"Challenging\" label and \"Se",
+        "source": "docs\/changelog.md#june-2026-week-4-data-fixes-ux-polish-emoji-cleanup:chunk-10"
+    },
+    {
+        "text": "l characters (`★` for ratings\/CTA, `✓`\/`✕` for approve\/decline) retained.\n\n| File | Removed |\n|---|---|\n| `profile.blade.php` | `$sport->icon` (🎾\/🏸\/🟡) in sport select options |\n| `connections\/index.blade.php` | 🤝 empty-state, `$sport->icon` in sport list |\n| `events\/create.blade.php` | ⚔ in \"Challenging\" label and \"Send Challenge\" button |\n| `host-game.blade.php` | ⚔ in \"Challenging\" label and \"Send Challenge\" button |\n| `my-events-host-requests.blade.php` | 🎉 empty-state, `$sport->icon` in sport tags |\n| `reviews\/create.blade.php` | `$sport->icon` in sport list |\n\n`sport->icon` fallbacks (`'🎾'`) replaced with `$us->sport->name` or removed.\n\n---",
+        "source": "docs\/changelog.md#june-2026-week-4-data-fixes-ux-polish-emoji-cleanup:chunk-11"
+    },
+    {
+        "text": "nd Challenge\" button |\n| `my-events-host-requests.blade.php` | 🎉 empty-state, `$sport->icon` in sport tags |\n| `reviews\/create.blade.php` | `$sport->icon` in sport list |\n\n`sport->icon` fallbacks (`'🎾'`) replaced with `$us->sport->name` or removed.\n\n---",
+        "source": "docs\/changelog.md#june-2026-week-4-data-fixes-ux-polish-emoji-cleanup:chunk-12"
+    },
+    {
+        "text": "## June 2026 — Week 2 (continued): Event Forms, Venue Coordinates & Autocomplete\n\n### Dead Code Removed\n\n| Item | Detail |\n|---|---|\n| `app\/Http\/Controllers\/GameController.php` | Deleted — no routes, no views, no references |\n| `app\/Models\/Game.php` | Deleted — `games` table exists but model was unused |\n| `GameMatch` model | **Kept** — still referenced by `User::gameMatches()` hasMany |\n\n### Venue Coordinates Fixed\n\n19 venues in DB; only 2 had `latitude`\/`longitude`. 17 venues showed NULL → Leaflet map on detail page was hidden for all of them.\n\n| Root cause | Scraper output `venues.json` lacked lat\/lng for 17 venues; `import:venues` command stored NULL |\n|---|---|\n| Fix | Coordinates set manually via Tinker based on each venue's area\/address (all Kota Tangerang Selatan) |\n| Command added",
+        "source": "docs\/changelog.md#june-2026-week-2-continued-event-forms-venue-coordinates-autocomplete:chunk-0"
+    },
+    {
+        "text": "e Coordinates Fixed\n\n19 venues in DB; only 2 had `latitude`\/`longitude`. 17 venues showed NULL → Leaflet map on detail page was hidden for all of them.\n\n| Root cause | Scraper output `venues.json` lacked lat\/lng for 17 venues; `import:venues` command stored NULL |\n|---|---|\n| Fix | Coordinates set manually via Tinker based on each venue's area\/address (all Kota Tangerang Selatan) |\n| Command added | `php artisan venue:geocode` — geocodes NULL-coordinate venues via Nominatim. `--all` flag to re-geocode everything |\n| Result | 19\/19 venues now have `latitude` + `longitude` |\n\n### `events\/create.blade.php` — Full Dark Theme Rewrite\n\nOld `create.blade.php` used light\/white theme (sky-600, slate-200, rounded-full, white\/95 card) inconsistent with the rest of the app.\n\n**Rewritten to match dark ",
+        "source": "docs\/changelog.md#june-2026-week-2-continued-event-forms-venue-coordinates-autocomplete:chunk-1"
+    },
+    {
+        "text": " | `php artisan venue:geocode` — geocodes NULL-coordinate venues via Nominatim. `--all` flag to re-geocode everything |\n| Result | 19\/19 venues now have `latitude` + `longitude` |\n\n### `events\/create.blade.php` — Full Dark Theme Rewrite\n\nOld `create.blade.php` used light\/white theme (sky-600, slate-200, rounded-full, white\/95 card) inconsistent with the rest of the app.\n\n**Rewritten to match dark theme:**\n- Uses `pm-card`, `pm-input`, `pm-btn-primary`, `pm-section-title`\n- Error banner: `border-red-500\/40 bg-red-500\/5` dark style\n- Approval toggle: custom dark CSS toggle (not bare checkbox)\n- Challenger banner: same as `host-game.blade.php` (orange border, DIRECT CHALLENGE badge)\n- `old()` values preserved on validation fail\n\n### Venue Autocomplete Picker — New Component\n\nNew `<x-venue-pic",
+        "source": "docs\/changelog.md#june-2026-week-2-continued-event-forms-venue-coordinates-autocomplete:chunk-2"
+    },
+    {
+        "text": "theme:**\n- Uses `pm-card`, `pm-input`, `pm-btn-primary`, `pm-section-title`\n- Error banner: `border-red-500\/40 bg-red-500\/5` dark style\n- Approval toggle: custom dark CSS toggle (not bare checkbox)\n- Challenger banner: same as `host-game.blade.php` (orange border, DIRECT CHALLENGE badge)\n- `old()` values preserved on validation fail\n\n### Venue Autocomplete Picker — New Component\n\nNew `<x-venue-picker>` Blade component (`resources\/views\/components\/venue-picker.blade.php`) added to both event creation forms.\n\n| Detail | Value |\n|---|---|\n| Endpoint | `GET \/venues\/search?q=` (new, no auth required) |\n| Route | `venues.search` — registered **before** `venues\/{venue}` to avoid route capture |\n| Controller method | `VenueController::search()` — searches name\/area\/address, returns JSON max 8 |\n| ",
+        "source": "docs\/changelog.md#june-2026-week-2-continued-event-forms-venue-coordinates-autocomplete:chunk-3"
+    },
+    {
+        "text": "ker>` Blade component (`resources\/views\/components\/venue-picker.blade.php`) added to both event creation forms.\n\n| Detail | Value |\n|---|---|\n| Endpoint | `GET \/venues\/search?q=` (new, no auth required) |\n| Route | `venues.search` — registered **before** `venues\/{venue}` to avoid route capture |\n| Controller method | `VenueController::search()` — searches name\/area\/address, returns JSON max 8 |\n| Debounce | 250ms |\n| On select | Fills `venue_name`, dispatches `CustomEvent('playmate:venue-selected', {lat, lng, name})` |\n| On manual type | `venue_name` = typed text; no coordinates dispatched |\n| Ownership | Owns `name=\"venue_name\"` only — lat\/lng owned by map-picker |\n\n### Map Picker — Venue Event Integration\n\n`map-picker.blade.php` updated to listen for `playmate:venue-selected`:\n\n- `setPos",
+        "source": "docs\/changelog.md#june-2026-week-2-continued-event-forms-venue-coordinates-autocomplete:chunk-4"
+    },
+    {
+        "text": "Debounce | 250ms |\n| On select | Fills `venue_name`, dispatches `CustomEvent('playmate:venue-selected', {lat, lng, name})` |\n| On manual type | `venue_name` = typed text; no coordinates dispatched |\n| Ownership | Owns `name=\"venue_name\"` only — lat\/lng owned by map-picker |\n\n### Map Picker — Venue Event Integration\n\n`map-picker.blade.php` updated to listen for `playmate:venue-selected`:\n\n- `setPosition(lat, lng, reverseGeocode)` — new `reverseGeocode` param. `false` when driven by venue-picker or Nominatim result. `true` when user clicks\/drags map.\n- `this._pending` — stores venue selection that arrives before Leaflet finishes loading. Applied inside `setTimeout(invalidateSize)` callback after `renderMap()`.\n- Removed `window._playmate_map` \/ `window._playmate_marker` global refs (replaced",
+        "source": "docs\/changelog.md#june-2026-week-2-continued-event-forms-venue-coordinates-autocomplete:chunk-5"
+    },
+    {
+        "text": "ition(lat, lng, reverseGeocode)` — new `reverseGeocode` param. `false` when driven by venue-picker or Nominatim result. `true` when user clicks\/drags map.\n- `this._pending` — stores venue selection that arrives before Leaflet finishes loading. Applied inside `setTimeout(invalidateSize)` callback after `renderMap()`.\n- Removed `window._playmate_map` \/ `window._playmate_marker` global refs (replaced by event-based communication).\n\n### Field Ownership — No Duplicate Inputs\n\n| Field | Owned by |\n|---|---|\n| `venue_name` | `<x-venue-picker>` |\n| `latitude` | `<x-map-picker lat-id=\"latitude\">` |\n| `longitude` | `<x-map-picker lng-id=\"longitude\">` |\n| `map_address` | `<x-map-picker addr-id=\"map_address\">` (helper field, not validated by controller) |\n\n`addr-id=\"map_address\"` (not `venue_name`) pr",
+        "source": "docs\/changelog.md#june-2026-week-2-continued-event-forms-venue-coordinates-autocomplete:chunk-6"
+    },
+    {
+        "text": " by event-based communication).\n\n### Field Ownership — No Duplicate Inputs\n\n| Field | Owned by |\n|---|---|\n| `venue_name` | `<x-venue-picker>` |\n| `latitude` | `<x-map-picker lat-id=\"latitude\">` |\n| `longitude` | `<x-map-picker lng-id=\"longitude\">` |\n| `map_address` | `<x-map-picker addr-id=\"map_address\">` (helper field, not validated by controller) |\n\n`addr-id=\"map_address\"` (not `venue_name`) prevents map-picker from overwriting the venue autocomplete's `venue_name` hidden input.\n\n---",
+        "source": "docs\/changelog.md#june-2026-week-2-continued-event-forms-venue-coordinates-autocomplete:chunk-7"
+    },
+    {
+        "text": "events map-picker from overwriting the venue autocomplete's `venue_name` hidden input.\n\n---",
+        "source": "docs\/changelog.md#june-2026-week-2-continued-event-forms-venue-coordinates-autocomplete:chunk-8"
+    },
+    {
+        "text": "## May 2026 — Week 3: Data Audit & Seed Refresh\n\n### Data Problems Fixed\n\n| Problem | Severity | Fix |\n|---|---|---|\n| `last_active_at` all within 0–25 days before May 4 | High | Regenerated with full 0–40 day spread → all 5 activity score tiers now covered |\n| Zero time preferences in `user_sports` | High | Added `preferred_start_time`, `preferred_end_time`, `preferred_days` to primary sport of 20\/32 core users |\n| Skill value stored as generic \"Level N\" labels | Medium | All normalized via `Sport::normalizeSkill()` using sport-specific max values |\n| Only 4 connections (3 pending, 1 accepted) | High | Expanded to 24 connections: 16 accepted (mutual clusters) + 8 pending |\n| Only 2 reviews | High | Expanded to 21 reviews across major players (connection + event sourced) |\n| 10 events, onl",
+        "source": "docs\/changelog.md#may-2026-week-3-data-audit-seed-refresh:chunk-0"
+    },
+    {
+        "text": "0\/32 core users |\n| Skill value stored as generic \"Level N\" labels | Medium | All normalized via `Sport::normalizeSkill()` using sport-specific max values |\n| Only 4 connections (3 pending, 1 accepted) | High | Expanded to 24 connections: 16 accepted (mutual clusters) + 8 pending |\n| Only 2 reviews | High | Expanded to 21 reviews across major players (connection + event sourced) |\n| 10 events, only 8 relevant to new users | Medium | Seeded 14 new events (19 total), 1–14 days ahead, with proper participant lists |\n| `Court Terre Arena` venue missing | Low | Added via Tinker command; referenced by Erlangga's event |\n| Roger Federer `skill_value` empty, no time prefs | Medium | Updated to Tennis 3 (norm 4) with weekend morning preferences |\n| Angga (id=34) has no sports or coords | Low | Pres",
+        "source": "docs\/changelog.md#may-2026-week-3-data-audit-seed-refresh:chunk-1"
+    },
+    {
+        "text": "y 8 relevant to new users | Medium | Seeded 14 new events (19 total), 1–14 days ahead, with proper participant lists |\n| `Court Terre Arena` venue missing | Low | Added via Tinker command; referenced by Erlangga's event |\n| Roger Federer `skill_value` empty, no time prefs | Medium | Updated to Tennis 3 (norm 4) with weekend morning preferences |\n| Angga (id=34) has no sports or coords | Low | Preserved as-is (protected) — not deleted |\n\n### New DataSeeder (`database\/seeders\/DataSeeder.php`)\n\nReplaces old inline seeders in `DatabaseSeeder`. Idempotent — uses `updateOrCreate`.\n\n| Feature | Detail |\n|---|---|\n| Protected users | Erlangga, Angga, Roger Federer never overwritten |\n| Time preferences | Added to primary sport only; realistic Jakarta play times |\n| Mutual connection clusters | 5 c",
+        "source": "docs\/changelog.md#may-2026-week-3-data-audit-seed-refresh:chunk-2"
+    },
+    {
+        "text": "erved as-is (protected) — not deleted |\n\n### New DataSeeder (`database\/seeders\/DataSeeder.php`)\n\nReplaces old inline seeders in `DatabaseSeeder`. Idempotent — uses `updateOrCreate`.\n\n| Feature | Detail |\n|---|---|\n| Protected users | Erlangga, Angga, Roger Federer never overwritten |\n| Time preferences | Added to primary sport only; realistic Jakarta play times |\n| Mutual connection clusters | 5 clusters trigger mutual badge on matchmaking cards |\n| Distance decay coverage | 5 far-zone users (Bandung → Malang) demonstrate exp(-d\/10) decay |\n| Activity score variance | All 5 tiers: ≤3d \/ ≤7d \/ ≤30d \/ ≤90d \/ >90d |\n| Challenge overlay trigger | Galih Ramadhan is top match for Rizky: score=0.91, sport=1.0, skill=1.0, mutual=1 → ⚔️ Challenger Discovered shown |\n| Sports data | NTRP 6 (norm 5) ",
+        "source": "docs\/changelog.md#may-2026-week-3-data-audit-seed-refresh:chunk-3"
+    },
+    {
+        "text": "lusters trigger mutual badge on matchmaking cards |\n| Distance decay coverage | 5 far-zone users (Bandung → Malang) demonstrate exp(-d\/10) decay |\n| Activity score variance | All 5 tiers: ≤3d \/ ≤7d \/ ≤30d \/ ≤90d \/ >90d |\n| Challenge overlay trigger | Galih Ramadhan is top match for Rizky: score=0.91, sport=1.0, skill=1.0, mutual=1 → ⚔️ Challenger Discovered shown |\n| Sports data | NTRP 6 (norm 5) for Rizky tennis → enables skill band scoring demonstration |\n| Event participant realism | Host as approved slot 1, specific users per event (not random pool) |\n\n### Database Stats After Refresh\n\n| Table | Before | After |\n|---|---|---|\n| Connections | 4 | 24 |\n| UserReviews | 2 | 21 |\n| Events | 10 | 19 |\n| EventParticipants | 32 | 72 |\n| Venues | 8 | 9 |\n| UserSports with time prefs | 0 | ~20 |",
+        "source": "docs\/changelog.md#may-2026-week-3-data-audit-seed-refresh:chunk-4"
+    },
+    {
+        "text": "for Rizky tennis → enables skill band scoring demonstration |\n| Event participant realism | Host as approved slot 1, specific users per event (not random pool) |\n\n### Database Stats After Refresh\n\n| Table | Before | After |\n|---|---|---|\n| Connections | 4 | 24 |\n| UserReviews | 2 | 21 |\n| Events | 10 | 19 |\n| EventParticipants | 32 | 72 |\n| Venues | 8 | 9 |\n| UserSports with time prefs | 0 | ~20 |\n\n---",
+        "source": "docs\/changelog.md#may-2026-week-3-data-audit-seed-refresh:chunk-5"
+    },
+    {
+        "text": "\n\n---",
+        "source": "docs\/changelog.md#may-2026-week-3-data-audit-seed-refresh:chunk-6"
+    },
+    {
+        "text": "## May 2026 — Week 2: Matchmaking v2 Upgrade\n\n### Performance: Query Reduction (~218 → ~5 queries, 96% reduction)\n\n**Bug:** ~218 DB queries per matchmaking page load due to N+1 issues.\n\n**Fixes applied:**\n\n1. **`getMutualConnectionCounts()`** — O(n) → O(1) via batch query + in-memory adjacency list\n2. **`calculateSportScore()` \/ `calculateSkillScore()`** — Now check `relationLoaded()` and use preloaded collections (120 queries → 0)\n3. **`getTimePreference()`** — Collection-aware via `getUserSportForSport()` helper\n4. **`primarySportId()`** — Uses preloaded collection when available\n\n### Scoring Algorithm: v1 → v2\n\n| Component | v1 Bug \/ Limitation | v2 Fix |\n|---|---|---|\n| Sport | Binary (0\/1) | Partial scores: 0.0\/0.5\/0.75\/1.0 based on primary vs secondary |\n| Skill | Linear decay `1 - (",
+        "source": "docs\/changelog.md#may-2026-week-2-matchmaking-v2-upgrade:chunk-0"
+    },
+    {
+        "text": "oaded collections (120 queries → 0)\n3. **`getTimePreference()`** — Collection-aware via `getUserSportForSport()` helper\n4. **`primarySportId()`** — Uses preloaded collection when available\n\n### Scoring Algorithm: v1 → v2\n\n| Component | v1 Bug \/ Limitation | v2 Fix |\n|---|---|---|\n| Sport | Binary (0\/1) | Partial scores: 0.0\/0.5\/0.75\/1.0 based on primary vs secondary |\n| Skill | Linear decay `1 - (diff\/10)` | Band-based: diff 0→1.0, 1→0.95, 2→0.80, 3→0.60, 4→0.35, ≥5→0.15 |\n| Time | Binary, always `false` (column missing) | Nuanced 0.0–1.0 based on overlap ratio + day intersection |\n| Distance | Discrete 2\/5\/10\/20km tiers | Continuous `exp(-d\/10)` decay |\n| Activity | 3 tiers | 5 tiers: ≤3→1.0, ≤7→0.75, ≤30→0.5, ≤90→0.25, >90→0.0 |\n| Radius filter | In-memory after scoring (broken) | Applie",
+        "source": "docs\/changelog.md#may-2026-week-2-matchmaking-v2-upgrade:chunk-1"
+    },
+    {
+        "text": "diff\/10)` | Band-based: diff 0→1.0, 1→0.95, 2→0.80, 3→0.60, 4→0.35, ≥5→0.15 |\n| Time | Binary, always `false` (column missing) | Nuanced 0.0–1.0 based on overlap ratio + day intersection |\n| Distance | Discrete 2\/5\/10\/20km tiers | Continuous `exp(-d\/10)` decay |\n| Activity | 3 tiers | 5 tiers: ≤3→1.0, ≤7→0.75, ≤30→0.5, ≤90→0.25, >90→0.0 |\n| Radius filter | In-memory after scoring (broken) | Applied in PHP via `User::distanceFromUser()` |\n| Time score | Asymmetric (A→B vs B→A different) | Symmetric fallback `0.5 + (dayScore * 0.5)` |\n\n### New Features\n\n| Feature | Description |\n|---|---|\n| Minimum score threshold filter | `min_score` filter: 25% (All), 30% (Fair), 40% (Good), 50% (Strong) |\n| Exclude connected users | `exclude_connected` checkbox hides accepted connections |\n| Filter preset",
+        "source": "docs\/changelog.md#may-2026-week-2-matchmaking-v2-upgrade:chunk-2"
+    },
+    {
+        "text": "d in PHP via `User::distanceFromUser()` |\n| Time score | Asymmetric (A→B vs B→A different) | Symmetric fallback `0.5 + (dayScore * 0.5)` |\n\n### New Features\n\n| Feature | Description |\n|---|---|\n| Minimum score threshold filter | `min_score` filter: 25% (All), 30% (Fair), 40% (Good), 50% (Strong) |\n| Exclude connected users | `exclude_connected` checkbox hides accepted connections |\n| Filter presets | localStorage `playmate_match_presets` — save\/load filter combinations |\n| Criteria match summary | Auto-generated green\/amber box showing strong\/weak factors |\n| Last active display | `Carbon::diffForHumans()` — \"Active 2 days ago\" replaces generic badges |\n| Challenger Discovered overlay | Fullscreen reveal when top match: score ≥ 0.75 + same sport + strong factors\/mutual. Canvas confetti, Al",
+        "source": "docs\/changelog.md#may-2026-week-2-matchmaking-v2-upgrade:chunk-3"
+    },
+    {
+        "text": "s | localStorage `playmate_match_presets` — save\/load filter combinations |\n| Criteria match summary | Auto-generated green\/amber box showing strong\/weak factors |\n| Last active display | `Carbon::diffForHumans()` — \"Active 2 days ago\" replaces generic badges |\n| Challenger Discovered overlay | Fullscreen reveal when top match: score ≥ 0.75 + same sport + strong factors\/mutual. Canvas confetti, Alpine.js, Challenge!\/Profile\/Skip buttons |\n| Challenge flow | `⚔️ Challenge!` → pre-filled event form → auto-invite opponent as pending participant |\n\n---",
+        "source": "docs\/changelog.md#may-2026-week-2-matchmaking-v2-upgrade:chunk-4"
+    },
+    {
+        "text": "pine.js, Challenge!\/Profile\/Skip buttons |\n| Challenge flow | `⚔️ Challenge!` → pre-filled event form → auto-invite opponent as pending participant |\n\n---",
+        "source": "docs\/changelog.md#may-2026-week-2-matchmaking-v2-upgrade:chunk-5"
+    },
+    {
+        "text": "## May 2026 — Week 1: Core System Stabilization\n\n| Fix | Description |\n|---|---|\n| `Sport::getSkillLevels()` auto-conversion | Detects and converts legacy `[\"Beginner\",...]` and `[1,2,3]` formats at runtime |\n| `Sport::getSkillLabel()` safe lookup | Uses `value` key scan, not array index |\n| `Sport::normalizeSkill()` clamping | Out-of-range values clamped before normalization |\n| Events browse page empty | `EventController::index` now queries past 90 days + future year |\n| Connection state on matchmaking cards | Pre-loaded in controller — no N+1 per card |\n| Avatar upload | Stored at `storage\/app\/public\/avatars\/`, shown across all views |\n| Map tiles not rendering | Leaflet in `<head>` + `map.invalidateSize()` on init |\n| Branding | \"SportsMatch\" → \"PlayMate\" in nav + logo |\n| `acceptedConnections()` SQL | Uses static `Connection::where()` builder, not `hasMany` |\n| Sports validation | `nullable` instead of `required` for `sports.*.sport_id` |\n\n---",
+        "source": "docs\/changelog.md#may-2026-week-1-core-system-stabilization"
+    },
+    {
+        "text": "## Pre-May 2026\n\n| Fix | Description |\n|---|---|\n| Raw lat\/lng number inputs | Replaced with `<x-map-picker>` Blade component |\n| Map picker component | Reusable `resources\/views\/components\/map-picker.blade.php` with Leaflet |\n| Filament Pinpoint vendor override | Map clipping, `x-cloak` conflict, z-index layering fixed |\n| Legacy skill data | One-time Tinker migration script provided in `docs\/database-schema.md` |\n\n---",
+        "source": "docs\/changelog.md#pre-may-2026"
+    },
+    {
+        "text": "## June 2026 — Week 1: AI Assistant (RAG Chatbot)\n\n### New Feature\n| Component | Description |\n|---|---|\n| `chat_sessions` + `chat_messages` tables | Per-user chat history, cascade delete on user removal |\n| `GeminiClient` service | Wraps Gemini 2.0 Flash (chat) + `gemini-embedding-001` (embeddings, 3072-dim) |\n| `RagRetriever` service | Loads `storage\/app\/private\/rag\/chunks.json` + `embeddings.json`, returns top-K chunks by cosine similarity |\n| `ChatbotService` | Orchestrates: embed query → retrieve top-5 → build prompt → call Gemini → return reply + tokens |\n| `php artisan rag:build` | Splits `docs\/*.md` by H2 (~1500 chars) → embeds → writes JSON index. Re-run after docs change |\n| `ChatAssistantController` | 6 endpoints: `show` (page), `index` (sessions JSON), `store`, `messages`, `sen",
+        "source": "docs\/changelog.md#june-2026-week-1-ai-assistant-rag-chatbot:chunk-0"
+    },
+    {
+        "text": "on`, returns top-K chunks by cosine similarity |\n| `ChatbotService` | Orchestrates: embed query → retrieve top-5 → build prompt → call Gemini → return reply + tokens |\n| `php artisan rag:build` | Splits `docs\/*.md` by H2 (~1500 chars) → embeds → writes JSON index. Re-run after docs change |\n| `ChatAssistantController` | 6 endpoints: `show` (page), `index` (sessions JSON), `store`, `messages`, `send`, `destroy`. All `auth` middleware |\n| Floating widget | `@include('partials._chatbot-widget')` injected into `layouts\/app.blade.php` — Alpine.js panel, sidebar session list + thread |\n| `\/chat` page | Sidebar session list + thread (ChatGPT-like) |\n| Rate limit | `throttle:30,10` on POST message (30 reqs per 10 min per user) |\n\n### Key Decisions\n| Decision | Rationale |\n|---|---|\n| `gemini-embed",
+        "source": "docs\/changelog.md#june-2026-week-1-ai-assistant-rag-chatbot:chunk-1"
+    },
+    {
+        "text": "d`, `destroy`. All `auth` middleware |\n| Floating widget | `@include('partials._chatbot-widget')` injected into `layouts\/app.blade.php` — Alpine.js panel, sidebar session list + thread |\n| `\/chat` page | Sidebar session list + thread (ChatGPT-like) |\n| Rate limit | `throttle:30,10` on POST message (30 reqs per 10 min per user) |\n\n### Key Decisions\n| Decision | Rationale |\n|---|---|\n| `gemini-embedding-001` (not `text-embedding-004`) | `text-embedding-004` was retired May 2025; old name now silently returns different dim, breaking cosine sim. `gemini-embedding-001` is the current stable ID (3072-dim) |\n| RAG to file JSON, not vector DB | Corpus is ~50 docs, < 2000 lines. Cosine sim in PHP < 50ms. Avoids Postgres\/MySQL FTS5 dependency |\n| RAG to `docs\/`, not `PROJECT-DOCS\/` | `docs\/` is the ",
+        "source": "docs\/changelog.md#june-2026-week-1-ai-assistant-rag-chatbot:chunk-2"
+    },
+    {
+        "text": "ding-001` (not `text-embedding-004`) | `text-embedding-004` was retired May 2025; old name now silently returns different dim, breaking cosine sim. `gemini-embedding-001` is the current stable ID (3072-dim) |\n| RAG to file JSON, not vector DB | Corpus is ~50 docs, < 2000 lines. Cosine sim in PHP < 50ms. Avoids Postgres\/MySQL FTS5 dependency |\n| RAG to `docs\/`, not `PROJECT-DOCS\/` | `docs\/` is the canonical reference (CLAUDE.md + models.md). `PROJECT-DOCS\/` is a workspace scratchpad |\n| Q&A only (no function calling) | Simplest viable scope; actions like \"find partner\" can be future v2 |\n| Login-gated | Session\/messages are personal; auth middleware is one line |\n| No streaming in v1 | Synchronous POST → JSON reply. SSE addable later without breaking changes |\n| Chat assistant distinct from",
+        "source": "docs\/changelog.md#june-2026-week-1-ai-assistant-rag-chatbot:chunk-3"
+    },
+    {
+        "text": "canonical reference (CLAUDE.md + models.md). `PROJECT-DOCS\/` is a workspace scratchpad |\n| Q&A only (no function calling) | Simplest viable scope; actions like \"find partner\" can be future v2 |\n| Login-gated | Session\/messages are personal; auth middleware is one line |\n| No streaming in v1 | Synchronous POST → JSON reply. SSE addable later without breaking changes |\n| Chat assistant distinct from `ChatController` | Suffix `Assistant` to avoid colliding with event group chat |\n\n### Why a new model ID?\n`gemini-embedding-001` and `text-embedding-004` produce **different** embeddings for the same text (different dim, different scale). Building an index on the old ID and querying with the new ID silently corrupts cosine similarity. Always pin the model string and rebuild.\n\n---",
+        "source": "docs\/changelog.md#june-2026-week-1-ai-assistant-rag-chatbot:chunk-4"
+    },
+    {
+        "text": " `ChatController` | Suffix `Assistant` to avoid colliding with event group chat |\n\n### Why a new model ID?\n`gemini-embedding-001` and `text-embedding-004` produce **different** embeddings for the same text (different dim, different scale). Building an index on the old ID and querying with the new ID silently corrupts cosine similarity. Always pin the model string and rebuild.\n\n---",
+        "source": "docs\/changelog.md#june-2026-week-1-ai-assistant-rag-chatbot:chunk-5"
+    },
+    {
+        "text": "## June 2026 — Week 3: Matchmaking Efficiency & Filament Admin Cleanup\n\n### MatchmakingService — Performance Optimizations\n\n| Fix | Detail |\n|---|---|\n| Triple `distanceFromUser()` eliminated | Distance computed once per opponent in filter step, stored in `$distances[id]` map, reused in map step and `getBadgesFromPrefs()`. Was called 3× → now 1× per opponent |\n| Quadruple `getTimePreference()` eliminated | Prefs computed once per opponent in `calculateScoreWithComponents()`, passed to `calculateTimeScoreFromPrefs()` and `getBadgesFromPrefs()`. Was called 4× → now 2× (one per user) |\n| `getBadgesFromPrefs()` extracted | Private method accepts pre-fetched prefs + distance. `getBadges()` public API unchanged for external callers |\n| `calculateTimeScoreFromPrefs()` extracted | Private method f",
+        "source": "docs\/changelog.md#june-2026-week-3-matchmaking-efficiency-filament-admin-cleanup:chunk-0"
+    },
+    {
+        "text": "minated | Prefs computed once per opponent in `calculateScoreWithComponents()`, passed to `calculateTimeScoreFromPrefs()` and `getBadgesFromPrefs()`. Was called 4× → now 2× (one per user) |\n| `getBadgesFromPrefs()` extracted | Private method accepts pre-fetched prefs + distance. `getBadges()` public API unchanged for external callers |\n| `calculateTimeScoreFromPrefs()` extracted | Private method for time scoring when prefs already fetched |\n| 5 dead compat methods removed | `calculateSportScoreCompat`, `calculateSkillScoreCompat`, `calculateDistanceScoreCompat`, `calculateActivityScoreCompat`, `hasTimeOverlap` — all deleted |\n| `getSkillForSport()` in User model | Added `relationLoaded()` guard — uses preloaded collection when available |\n\n### Filament Admin — Cleanup & Enhancements\n\n| Cha",
+        "source": "docs\/changelog.md#june-2026-week-3-matchmaking-efficiency-filament-admin-cleanup:chunk-1"
+    },
+    {
+        "text": "or time scoring when prefs already fetched |\n| 5 dead compat methods removed | `calculateSportScoreCompat`, `calculateSkillScoreCompat`, `calculateDistanceScoreCompat`, `calculateActivityScoreCompat`, `hasTimeOverlap` — all deleted |\n| `getSkillForSport()` in User model | Added `relationLoaded()` guard — uses preloaded collection when available |\n\n### Filament Admin — Cleanup & Enhancements\n\n| Change | Detail |\n|---|---|\n| `GameMatches\/` resource deleted | 0 DB rows, empty form schema, dead resource. Entire directory removed |\n| `Fields\/` resource deleted | Old court booking system, 8 DB rows, dead. Entire directory removed |\n| `TimeSlots\/` resource deleted | Old booking slots, 88 rows, dead. Entire directory removed |\n| `EventParticipantsTable` — enhanced | Added `status` badge column (su",
+        "source": "docs\/changelog.md#june-2026-week-3-matchmaking-efficiency-filament-admin-cleanup:chunk-2"
+    },
+    {
+        "text": "nge | Detail |\n|---|---|\n| `GameMatches\/` resource deleted | 0 DB rows, empty form schema, dead resource. Entire directory removed |\n| `Fields\/` resource deleted | Old court booking system, 8 DB rows, dead. Entire directory removed |\n| `TimeSlots\/` resource deleted | Old booking slots, 88 rows, dead. Entire directory removed |\n| `EventParticipantsTable` — enhanced | Added `status` badge column (success\/warning\/danger colors), `slot_number` column, `joined_at` column, EditAction + DeleteBulkAction |\n| `EventParticipantForm` — enhanced | Added `status` Select (pending\/approved\/rejected, default pending) and `slot_number` TextInput |\n| `UsersTable` — role badge | Added `role` column with badge: admin=red, user=gray |\n| `UserForm` — role field | Added `role` Select (User \/ Admin, default User)",
+        "source": "docs\/changelog.md#june-2026-week-3-matchmaking-efficiency-filament-admin-cleanup:chunk-3"
+    },
+    {
+        "text": "ccess\/warning\/danger colors), `slot_number` column, `joined_at` column, EditAction + DeleteBulkAction |\n| `EventParticipantForm` — enhanced | Added `status` Select (pending\/approved\/rejected, default pending) and `slot_number` TextInput |\n| `UsersTable` — role badge | Added `role` column with badge: admin=red, user=gray |\n| `UserForm` — role field | Added `role` Select (User \/ Admin, default User). Password field made nullable with helper text |\n| `role` column migration | `add_role_to_users_table` migration: `string('role')->default('user')` on users table |\n| User model — `FilamentUser` | Implements `FilamentUser` interface, `canAccessPanel()` returns `$this->isAdmin()` |\n| User model — `isAdmin()` | Helper method: `return $this->role === 'admin'` |\n| Admin panel gated | Only users with ",
+        "source": "docs\/changelog.md#june-2026-week-3-matchmaking-efficiency-filament-admin-cleanup:chunk-4"
+    },
+    {
+        "text": ". Password field made nullable with helper text |\n| `role` column migration | `add_role_to_users_table` migration: `string('role')->default('user')` on users table |\n| User model — `FilamentUser` | Implements `FilamentUser` interface, `canAccessPanel()` returns `$this->isAdmin()` |\n| User model — `isAdmin()` | Helper method: `return $this->role === 'admin'` |\n| Admin panel gated | Only users with `role=admin` can access Filament. All others get 403 |\n| Demo admin users | `erlanggarafi38@gmail.com` + `rizky@example.com` set to `role=admin` via Tinker |\n\n---",
+        "source": "docs\/changelog.md#june-2026-week-3-matchmaking-efficiency-filament-admin-cleanup:chunk-5"
+    },
+    {
+        "text": "`role=admin` can access Filament. All others get 403 |\n| Demo admin users | `erlanggarafi38@gmail.com` + `rizky@example.com` set to `role=admin` via Tinker |\n\n---",
+        "source": "docs\/changelog.md#june-2026-week-3-matchmaking-efficiency-filament-admin-cleanup:chunk-6"
+    },
+    {
+        "text": "## June 2026 — Week 3: Bowl Series Restyle, Venue Simplification & Matchmaking Fixes\n\n### Visual Restyle — Bowl Series Theme\n\n| Change | Detail |\n|---|---|\n| Background color | `#0A0F1F` (navy) → `#0D0D0D` (pure black) across all layouts |\n| Primary button color | Orange fill + dark text → **Red `#D62B2B`** (hover → orange `#F97316`) |\n| Navbar layout | Logo-left → **logo center, menu split left\/right** |\n| Section labels | Plain orange text → `— LABEL —` format with side decorators |\n| `pm-section-title` | Updated to flex with `::before`\/`::after` line decorators |\n| Footer | Minimal 1-liner → **4-column footer** with nav links + social icons |\n| Grid gap background | `grid gap-px bg-white\/10` → `grid gap-px` + `style=\"background:#0D0D0D\"` (fixed gray leak on incomplete grid rows) across ",
+        "source": "docs\/changelog.md#june-2026-week-3-bowl-series-restyle-venue-simplification-matchmaking-fixes:chunk-0"
+    },
+    {
+        "text": "ight** |\n| Section labels | Plain orange text → `— LABEL —` format with side decorators |\n| `pm-section-title` | Updated to flex with `::before`\/`::after` line decorators |\n| Footer | Minimal 1-liner → **4-column footer** with nav links + social icons |\n| Grid gap background | `grid gap-px bg-white\/10` → `grid gap-px` + `style=\"background:#0D0D0D\"` (fixed gray leak on incomplete grid rows) across all views |\n| Pagination | Container `bg-white\/10` removed; each button has its own border\/background |\n\n**Files changed:** `layouts\/app.blade.php`, `welcome.blade.php`, `resources\/css\/app.css`, `matchmaking.blade.php`, `my-events.blade.php`, `connections\/index.blade.php`, `events\/show.blade.php`, `profile.blade.php`, `players\/profile.blade.php`, `venues\/show.blade.php`\n\n### Welcome Page — Content",
+        "source": "docs\/changelog.md#june-2026-week-3-bowl-series-restyle-venue-simplification-matchmaking-fixes:chunk-1"
+    },
+    {
+        "text": "all views |\n| Pagination | Container `bg-white\/10` removed; each button has its own border\/background |\n\n**Files changed:** `layouts\/app.blade.php`, `welcome.blade.php`, `resources\/css\/app.css`, `matchmaking.blade.php`, `my-events.blade.php`, `connections\/index.blade.php`, `events\/show.blade.php`, `profile.blade.php`, `players\/profile.blade.php`, `venues\/show.blade.php`\n\n### Welcome Page — Content Preserved, Visual Restyle\n\n- Hero: \"Find Your Next Match.\" + slogan + stats (32 Members \/ 03 Sports \/ 08 Venues) retained\n- 3 sport tiles retained: Tennis (NTRP 1.0–7.0), Padel (Doubles, levels 1–7), Badminton (Singles & Doubles)\n- Added **Upcoming Events** section (live data from DB)\n- Added **How It Works** 3-step section\n- CTA \"Ready to Join?\" retained\n- Navbar: centered logo, split nav, red C",
+        "source": "docs\/changelog.md#june-2026-week-3-bowl-series-restyle-venue-simplification-matchmaking-fixes:chunk-2"
+    },
+    {
+        "text": " Preserved, Visual Restyle\n\n- Hero: \"Find Your Next Match.\" + slogan + stats (32 Members \/ 03 Sports \/ 08 Venues) retained\n- 3 sport tiles retained: Tennis (NTRP 1.0–7.0), Padel (Doubles, levels 1–7), Badminton (Singles & Doubles)\n- Added **Upcoming Events** section (live data from DB)\n- Added **How It Works** 3-step section\n- CTA \"Ready to Join?\" retained\n- Navbar: centered logo, split nav, red CTA button\n\n### Matchmaking — Popup & Badge Fixes\n\n| Fix | Detail |\n|---|---|\n| Confetti removed | Entire canvas confetti JS (~100 lines) removed — not aligned with premium theme |\n| Emoji stripped from badges | `MatchmakingService::getBadges()` — `⚡📍🔥🟡⏰` removed; plain text: `Same Level`, `Similar Skill`, `Nearby`, `Close`, `In Form`, `Active`, `Schedule Match` |\n| `⏳ Pending` badge | Replaced wit",
+        "source": "docs\/changelog.md#june-2026-week-3-bowl-series-restyle-venue-simplification-matchmaking-fixes:chunk-3"
+    },
+    {
+        "text": "TA button\n\n### Matchmaking — Popup & Badge Fixes\n\n| Fix | Detail |\n|---|---|\n| Confetti removed | Entire canvas confetti JS (~100 lines) removed — not aligned with premium theme |\n| Emoji stripped from badges | `MatchmakingService::getBadges()` — `⚡📍🔥🟡⏰` removed; plain text: `Same Level`, `Similar Skill`, `Nearby`, `Close`, `In Form`, `Active`, `Schedule Match` |\n| `⏳ Pending` badge | Replaced with plain \"Request Pending\" |\n| Popup only on search | `x-init` now gated by `@if(request()->boolean('searched'))` — popup no longer fires on fresh page load |\n| Saved presets | Wrapped in `@if(request()->has('searched'))` — chips hidden until first search |\n| Popup redesign | Score ring (96px border box), skill bar 2px, component bars 2px, badges plain text, no glow ring, clean 2-button footer |\n| ",
+        "source": "docs\/changelog.md#june-2026-week-3-bowl-series-restyle-venue-simplification-matchmaking-fixes:chunk-4"
+    },
+    {
+        "text": "h plain \"Request Pending\" |\n| Popup only on search | `x-init` now gated by `@if(request()->boolean('searched'))` — popup no longer fires on fresh page load |\n| Saved presets | Wrapped in `@if(request()->has('searched'))` — chips hidden until first search |\n| Popup redesign | Score ring (96px border box), skill bar 2px, component bars 2px, badges plain text, no glow ring, clean 2-button footer |\n| Popup animation | CSS keyframe `pm-card-in`: `translateY(28px) scale(0.97)` → overshoot `-3px \/ scale(1.005)` → settle. `cubic-bezier(0.22,1,0.36,1)` 550ms. Backdrop separate 350ms fade |\n\n### Venue Pages — Simplified to Directory\n\n**Decision:** Venue pages are now a read-only **Venue Directory** for reference when hosting events. Booking and court availability are out of scope (no real-time API, ",
+        "source": "docs\/changelog.md#june-2026-week-3-bowl-series-restyle-venue-simplification-matchmaking-fixes:chunk-5"
+    },
+    {
+        "text": "Popup animation | CSS keyframe `pm-card-in`: `translateY(28px) scale(0.97)` → overshoot `-3px \/ scale(1.005)` → settle. `cubic-bezier(0.22,1,0.36,1)` 550ms. Backdrop separate 350ms fade |\n\n### Venue Pages — Simplified to Directory\n\n**Decision:** Venue pages are now a read-only **Venue Directory** for reference when hosting events. Booking and court availability are out of scope (no real-time API, no venue partnership agreements).\n\n| Change | Detail |\n|---|---|\n| `VenueController` | Removed `slots` from all eager loads |\n| `venues\/index.blade.php` | Rewritten — filter by sport\/area, card grid showing name, sport, address, hours, price estimate |\n| `venues\/show.blade.php` | Rewritten — removed entire \"Availability Schedule\" section + `VenueSlot` rendering |\n| Price estimate | Still shown but",
+        "source": "docs\/changelog.md#june-2026-week-3-bowl-series-restyle-venue-simplification-matchmaking-fixes:chunk-6"
+    },
+    {
+        "text": "no venue partnership agreements).\n\n| Change | Detail |\n|---|---|\n| `VenueController` | Removed `slots` from all eager loads |\n| `venues\/index.blade.php` | Rewritten — filter by sport\/area, card grid showing name, sport, address, hours, price estimate |\n| `venues\/show.blade.php` | Rewritten — removed entire \"Availability Schedule\" section + `VenueSlot` rendering |\n| Price estimate | Still shown but labeled \"Estimated Rate · contact venue to confirm\" |\n| Leaflet map | Added to detail page — dark tile (CartoDB), orange marker, read-only. Renders only if `latitude` & `longitude` set |\n| \"Host Event Here\" | Retained — links to `events.create?venue_id=X` |\n| Notice box | Added — clarifies venue is directory only; direct booking via venue contact |\n| Data source | Venue data will be scraped from ",
+        "source": "docs\/changelog.md#june-2026-week-3-bowl-series-restyle-venue-simplification-matchmaking-fixes:chunk-7"
+    },
+    {
+        "text": " labeled \"Estimated Rate · contact venue to confirm\" |\n| Leaflet map | Added to detail page — dark tile (CartoDB), orange marker, read-only. Renders only if `latitude` & `longitude` set |\n| \"Host Event Here\" | Retained — links to `events.create?venue_id=X` |\n| Notice box | Added — clarifies venue is directory only; direct booking via venue contact |\n| Data source | Venue data will be scraped from **ayo.co.id** |\n\n---",
+        "source": "docs\/changelog.md#june-2026-week-3-bowl-series-restyle-venue-simplification-matchmaking-fixes:chunk-8"
+    },
+    {
+        "text": "**ayo.co.id** |\n\n---",
+        "source": "docs\/changelog.md#june-2026-week-3-bowl-series-restyle-venue-simplification-matchmaking-fixes:chunk-9"
+    },
+    {
+        "text": "## June 2026 — Week 2: Bug Fixes & UI Improvements\n\n### Bug Fixes\n\n| Fix | Description |\n|---|---|\n| `partials._animejs-init` not found | `dashboard.blade.php` and `matchmaking.blade.php` referenced a non-existent partial. Fixed to `partials._animejs-init-base` |\n| Chatbot JS config closures broken | PHP closures (`fn($id) => url(...)`) in `@js()` do not serialize to JS functions. Replaced `messagesUrl`, `sendUrl`, `destroyUrl` with a single `baseUrl` string and template literals |\n| Chatbot delete session always failed | `deleteSession()` JS did not check HTTP response status. Fixed with proper `r.ok` check |\n| Gemini chat model 404 | `gemini-2.0-flash` daily free-tier quota exhausted by RAG build. Switched to `gemini-2.5-flash` |\n\n### UI \/ UX\n\n| Change | Description |\n|---|---|\n| Landing hero background | Replaced static `landing-hero.jpg` with `background.mp4` video (autoplay, muted, loop). CSS z-index: video (0) → gradient overlay (1) → content (2) |\n| Chat assistant UI language | All UI text in chatbot widget and full-page chat changed from Indonesian to English (\"KIRIM\" → \"SEND\", \"Tanpa judul\" → \"Untitled\", \"mengetik\" → \"typing...\", etc.) |\n| Chatbot error messages | All error strings in `_chatbot-scripts.blade.php` and `ChatAssistantController` changed to English |\n\n### Model Update\n\n| Item | Before | After |\n|---|---|---|\n| `GEMINI_CHAT_MODEL` | `gemini-2.0-flash` | `gemini-2.5-flash` |",
+        "source": "docs\/changelog.md#june-2026-week-2-bug-fixes-ui-improvements"
+    },
+    {
+        "text": "# Controllers\n\n> PlayMate — Controller Reference\n> Last updated: June 2026\n\n---",
+        "source": "docs\/controllers.md#controllers"
+    },
+    {
+        "text": "## 1. MatchmakingController\n\n**File:** `app\/Http\/Controllers\/MatchmakingController.php`\n\n**Method:** `index()`\n\nPreloads all data for performance (no N+1 queries):\n- `userSports.sport` — user's sports with skill levels\n- All recommended opponents with `userSports.sport` + `userSports` eager loaded\n- `reviewsReceived` for rated players\n- Batch connection states via single query\n- `getMutualConnectionCounts()` — single query for all opponents\n\n**Passes to view:** `topMatch`, `showReveal`, `gridResults`, `connectionStates`\n\n**Filters supported:** sport_id, play_style, gender, age_range, start_time, end_time, radius_km, preferred_days, min_score, exclude_connected\n\n**Connection state-aware UI:** Pre-loads all connection states in one query; view renders:\n- `Connected` → \"Chat\" button + ✓ badge\n- `Pending sent` → ⏳ Pending badge\n- `Pending received` → Accept \/ Decline buttons\n- `Declined\/blocked` → \"Connect\" button\n- No connection → \"Connect\" button\n\n**Overlay trigger:** `showReveal = $topMatch && $topMatch['score'] >= 0.75 && $topMatch['components']['sport']['raw'] == 1.0 && ($strongFactors >= 2 || $topMatch['mutual_connections_count'] >= 1)`\n\n---",
+        "source": "docs\/controllers.md#1-matchmakingcontroller"
+    },
+    {
+        "text": "## 2. EventController\n\n**File:** `app\/Http\/Controllers\/EventController.php`\n\n| Method | Description |\n|---|---|\n| `index(createFilters)` | Shows events from `now()->subDays(90)` to `now()->addYear()` (fixed: was showing none after seeder dates passed) |\n| `create()` | Show event creation form |\n| `store()` | Validate + create event. If `opponent_id` provided → auto-add opponent as pending participant |\n| `show()` | Event detail + participant list |\n| `join()` | Join event (auto-approved if `approval_required=false`) |\n| `leave()` | Leave event (cancels own participation) |\n| `cancel()` | Host cancels event |\n| `challenge(User $user)` | Pre-fills event creation form with selected opponent; passes `opponent_id` for auto-invite on store |\n\n---",
+        "source": "docs\/controllers.md#2-eventcontroller"
+    },
+    {
+        "text": "## 3. ConnectionController\n\n**File:** `app\/Http\/Controllers\/ConnectionController.php`\n\n| Method | Description |\n|---|---|\n| `index()` | Incoming \/ Sent \/ Active connections tabs |\n| `store()` | Send connection request + duplicate check |\n| `update(Connection $connection)` | Accept \/ Decline \/ Block (receiver-only actions) |\n| `playerProfile(User $user)` | Public profile page — loads `userSports.sport`, `reviewsReceived.reviewer`, `joinedEvents.sport`. Shows smart CTA based on connection state |\n| `chat(Connection $connection)` | Private DM thread |\n| `sendMessage(Connection $connection)` | Text + file upload → `storage\/app\/public\/chat-files\/` |\n\n**Connection states:**\n\n---",
+        "source": "docs\/controllers.md#3-connectioncontroller"
+    },
+    {
+        "text": "## 4. MyEventsController\n\n**File:** `app\/Http\/Controllers\/MyEventsController.php`\n\n| Method | Description |\n|---|---|\n| `index()` | Upcoming \/ Hosted \/ Waiting \/ Pending \/ Past \/ Cancelled tabs + `pendingRequestsCount` badge |\n| `hostRequests()` | List all pending join requests across user's hosted events |\n| `approve(EventParticipant $participant)` | Sets status to `approved`, assigns next `slot_number`, posts system message to event chat. **403 if not host.** Disabled if event is full |\n| `reject(EventParticipant $participant)` | Sets status to `rejected`, posts system message to event chat. **403 if not host** |\n\n---",
+        "source": "docs\/controllers.md#4-myeventscontroller"
+    },
+    {
+        "text": "## 5. ChatController\n\n**File:** `app\/Http\/Controllers\/ChatController.php`\n\n| Method | Auth Rule |\n|---|---|\n| `show(Event $event)` | `canAccessChat($authUser)` — approved participant OR host only |\n| `send(Event $event)` | Text\/image\/file upload to `storage\/app\/public\/chat-files\/` |\n| `destroy(EventMessage $message)` | Owner only (`isOwnedBy($authUser)`) |\n\n---",
+        "source": "docs\/controllers.md#5-chatcontroller"
+    },
+    {
+        "text": "## 6. ProfileController\n\n**File:** `app\/Http\/Controllers\/ProfileController.php`\n\n| Method | Description |\n|---|---|\n| `index()` | Shows profile + sports + time preferences + `acceptedConnections` |\n| `update()` | Avatar upload to `storage\/app\/public\/avatars\/` + profile fields sync + **deletes and recreates** `user_sports` with sports sync + per-sport time preferences. Uses `nullable` for `sports.*.sport_id` validation to allow empty rows |\n\n---",
+        "source": "docs\/controllers.md#6-profilecontroller"
+    },
+    {
+        "text": "## 7. ReviewController\n\n**File:** `app\/Http\/Controllers\/ReviewController.php`\n\n| Method | Description |\n|---|---|\n| `create()` | Show rating form + duplicate check (checks `UserReview` by `reviewer_id`, `reviewed_user_id`, `source_type`) |\n| `store()` | Save review (1–5 star rating, comment, source tracking). **Duplicate prevention:** unique constraint on `(reviewer_id, reviewed_user_id, source_type)` |\n\n---",
+        "source": "docs\/controllers.md#7-reviewcontroller"
+    },
+    {
+        "text": "## 8. VenueController\n\n**File:** `app\/Http\/Controllers\/VenueController.php`\n\n| Method | Description |\n|---|---|\n| `index(filters)` | Venue directory cards filtered by `sport_id` and `area`. Paginated (9\/page). |\n| `search(Request $request)` | **JSON** — Autocomplete endpoint for venue picker. Query param `?q=`. Searches `name`, `area`, `address`. Returns max 8 results with `id`, `name`, `area`, `address`, `sport`, `latitude`, `longitude`. No auth required. |\n| `show(Venue $venue)` | Full venue detail: info cards, gallery, Leaflet map (if lat\/lng set), CTAs |\n\n**Autocomplete endpoint:** Used by `<x-venue-picker>` component on event creation and challenge forms. Returns JSON for Alpine.js dropdown.\n\n---",
+        "source": "docs\/controllers.md#8-venuecontroller"
+    },
+    {
+        "text": "## 9. DashboardController\n\n**File:** `app\/Http\/Controllers\/DashboardController.php`\n\n| Method | Description |\n|---|---|\n| `index()` | Landing dashboard with 4 feature cards |\n\n---",
+        "source": "docs\/controllers.md#9-dashboardcontroller"
+    },
+    {
+        "text": "## 10. ~~GameController~~ (Deleted — June 2026)\n\n`GameController` and `app\/Models\/Game.php` were **deleted** as dead code. No routes, no views, no active references. `GameMatch` model retained (used by `User::gameMatches()` hasMany).\n\n---",
+        "source": "docs\/controllers.md#10-gamecontroller-deleted-june-2026"
+    },
+    {
+        "text": "## 11. FieldAvailabilityController (Legacy)\n\nNot listed in main routes — serves `GET \/field-availability` for legacy `Field` + `TimeSlot` tables.\n\n---",
+        "source": "docs\/controllers.md#11-fieldavailabilitycontroller-legacy"
+    },
+    {
+        "text": "## 12. ChatAssistantController (AI Assistant — June 2026)\n\n**File:** `app\/Http\/Controllers\/ChatAssistantController.php`\n\nPowers the RAG-backed PlayMate Assistant. **All endpoints behind `auth` middleware.**\n\n| Method | Description |\n|---|---|\n| `show(ChatSession)` | Full-page chat view (`resources\/views\/chat\/show.blade.php`) |\n| `index()` | JSON: list of auth user's sessions for sidebar |\n| `store()` | Create new empty session, return JSON `{id, title, ...}` |\n| `messages(ChatSession)` | JSON: all messages of session (asc by created_at) |\n| `send(ChatSession, ChatbotService)` | Persist user message → call `ChatbotService::ask()` → return JSON `{user, assistant, session}`. On `GeminiException` → 502 |\n| `destroy(ChatSession)` | Delete session (cascades messages) |\n\n**Owner authorization:** inline check `$session->user_id !== auth()->id() → abort(403)` *before* any service call (avoid timing leak).\n\n**Distinguished from `ChatController`** (event group chat) — name uses `Assistant` suffix to avoid collision.",
+        "source": "docs\/controllers.md#12-chatassistantcontroller-ai-assistant-june-2026"
+    },
+    {
+        "text": "# Database Schema\n\n> PlayMate — Complete Database Schema Reference\n> Last updated: July 2026\n\n---",
+        "source": "docs\/database-schema.md#database-schema"
+    },
+    {
+        "text": "## 1. Core Tables\n\n### `sports`\n| Column | Type | Notes |\n|---|---|---|\n| id | bigint PK | Auto-increment |\n| name | varchar | e.g. \"Tennis\" |\n| slug | varchar | URL-safe identifier |\n| icon | varchar nullable | Emoji or icon class |\n| description | text nullable | |\n| skill_levels | json | `[{value: int, name: string}, ...]` — **ALWAYS access via `Sport::getSkillLevels()`** |\n\n### `users`\n| Column | Type | Notes |\n|---|---|---|\n| id | bigint PK | |\n| name | varchar | |\n| email | varchar unique | |\n| password | varchar | |\n| email_verified_at | timestamp nullable | |\n| photo_url | varchar nullable | Avatar image path — `storage\/app\/public\/avatars\/` |\n| bio | text nullable | |\n| gender | enum(male\/female\/other) nullable | |\n| age_range | varchar(20) nullable | \"18-25\", \"26-35\", \"36-50\", \"51",
+        "source": "docs\/database-schema.md#1-core-tables:chunk-0"
+    },
+    {
+        "text": "n | Type | Notes |\n|---|---|---|\n| id | bigint PK | |\n| name | varchar | |\n| email | varchar unique | |\n| password | varchar | |\n| email_verified_at | timestamp nullable | |\n| photo_url | varchar nullable | Avatar image path — `storage\/app\/public\/avatars\/` |\n| bio | text nullable | |\n| gender | enum(male\/female\/other) nullable | |\n| age_range | varchar(20) nullable | \"18-25\", \"26-35\", \"36-50\", \"51+\" |\n| home_address | varchar nullable | |\n| latitude | decimal(10,8) nullable | GPS coordinate |\n| longitude | decimal(11,8) nullable | GPS coordinate |\n| play_style | varchar(20) nullable | \"casual\" or \"competitive\" |\n| last_active_at | timestamp nullable | Used for activity scoring in matchmaking |\n| total_events_joined | int default 0 | |\n| timestamps | | created_at, updated_at |\n\n### `user_sp",
+        "source": "docs\/database-schema.md#1-core-tables:chunk-1"
+    },
+    {
+        "text": "+\" |\n| home_address | varchar nullable | |\n| latitude | decimal(10,8) nullable | GPS coordinate |\n| longitude | decimal(11,8) nullable | GPS coordinate |\n| play_style | varchar(20) nullable | \"casual\" or \"competitive\" |\n| last_active_at | timestamp nullable | Used for activity scoring in matchmaking |\n| total_events_joined | int default 0 | |\n| timestamps | | created_at, updated_at |\n\n### `user_sports` (pivot)\n| Column | Type | Notes |\n|---|---|---|\n| id | bigint PK | |\n| user_id | bigint FK | → `users.id` |\n| sport_id | bigint FK | → `sports.id` |\n| skill_value | varchar | Human-readable label, e.g. \"3.5\", \"Upper Intermediate\" |\n| skill_number | int | Normalized 1–10 scale — **always store via `Sport::normalizeSkill()`** |\n| play_style | varchar(20) nullable | Per-sport play style overrid",
+        "source": "docs\/database-schema.md#1-core-tables:chunk-2"
+    },
+    {
+        "text": "orts` (pivot)\n| Column | Type | Notes |\n|---|---|---|\n| id | bigint PK | |\n| user_id | bigint FK | → `users.id` |\n| sport_id | bigint FK | → `sports.id` |\n| skill_value | varchar | Human-readable label, e.g. \"3.5\", \"Upper Intermediate\" |\n| skill_number | int | Normalized 1–10 scale — **always store via `Sport::normalizeSkill()`** |\n| play_style | varchar(20) nullable | Per-sport play style override |\n| preferred_start_time | time nullable | Preferred playing time from (e.g. `09:00:00`) |\n| preferred_end_time | time nullable | Preferred playing time to (e.g. `17:00:00`) |\n| preferred_days | json nullable | Array of day numbers: `[0,1,2,3,4,5,6]` (0=Sun…6=Sat) |\n| **Unique** | `(user_id, sport_id)` | One skill level per sport per user |\n\n---",
+        "source": "docs\/database-schema.md#1-core-tables:chunk-3"
+    },
+    {
+        "text": "e |\n| preferred_start_time | time nullable | Preferred playing time from (e.g. `09:00:00`) |\n| preferred_end_time | time nullable | Preferred playing time to (e.g. `17:00:00`) |\n| preferred_days | json nullable | Array of day numbers: `[0,1,2,3,4,5,6]` (0=Sun…6=Sat) |\n| **Unique** | `(user_id, sport_id)` | One skill level per sport per user |\n\n---",
+        "source": "docs\/database-schema.md#1-core-tables:chunk-4"
+    },
+    {
+        "text": "## 2. Event Tables\n\n### `events`\n| Column | Type | Notes |\n|---|---|---|\n| id | bigint PK | |\n| host_id | bigint FK | → `users.id` |\n| sport_id | bigint FK nullable | → `sports.id` |\n| title | varchar | |\n| description | text nullable | |\n| venue_name | varchar | |\n| latitude | decimal(10,8) nullable | |\n| longitude | decimal(11,8) nullable | |\n| start_time | datetime | |\n| end_time | datetime | |\n| max_slots | int default 4 | |\n| price | decimal nullable | |\n| payment_info | text nullable | |\n| visibility | enum(public\/private) default public | |\n| match_type | enum(singles\/doubles) default singles | |\n| approval_required | boolean default false | |\n| status | enum(upcoming\/ongoing\/completed\/cancelled) | |\n| timestamps | | |\n\n### `event_participants`\n| Column | Type | Notes |\n|---|---|---",
+        "source": "docs\/database-schema.md#2-event-tables:chunk-0"
+    },
+    {
+        "text": "\n| max_slots | int default 4 | |\n| price | decimal nullable | |\n| payment_info | text nullable | |\n| visibility | enum(public\/private) default public | |\n| match_type | enum(singles\/doubles) default singles | |\n| approval_required | boolean default false | |\n| status | enum(upcoming\/ongoing\/completed\/cancelled) | |\n| timestamps | | |\n\n### `event_participants`\n| Column | Type | Notes |\n|---|---|---|\n| id | bigint PK | |\n| event_id | bigint FK | → `events.id` |\n| user_id | bigint FK | → `users.id` |\n| status | enum default approved | 'pending'\\|'approved'\\|'rejected'\\|'waiting' |\n| is_invite | boolean default false | `true` = challenge invite sent by host; `false` = regular join request |\n| slot_number | int nullable | Join order (1, 2, 3, ...) |\n| joined_at | timestamp nullable | |\n| **Uniq",
+        "source": "docs\/database-schema.md#2-event-tables:chunk-1"
+    },
+    {
+        "text": "|\n| id | bigint PK | |\n| event_id | bigint FK | → `events.id` |\n| user_id | bigint FK | → `users.id` |\n| status | enum default approved | 'pending'\\|'approved'\\|'rejected'\\|'waiting' |\n| is_invite | boolean default false | `true` = challenge invite sent by host; `false` = regular join request |\n| slot_number | int nullable | Join order (1, 2, 3, ...) |\n| joined_at | timestamp nullable | |\n| **Unique** | `(event_id, user_id)` | |\n\n### `event_messages`\n| Column | Type | Notes |\n|---|---|---|\n| id | bigint PK | |\n| event_id | bigint FK | → `events.id` |\n| user_id | bigint FK | → `users.id` |\n| content | text | |\n| type | enum(text\/image\/file) default text | |\n| file_url | varchar nullable | `storage\/app\/public\/chat-files\/` |\n| file_name | varchar nullable | |\n| timestamps | | |\n\n---",
+        "source": "docs\/database-schema.md#2-event-tables:chunk-2"
+    },
+    {
+        "text": "ue** | `(event_id, user_id)` | |\n\n### `event_messages`\n| Column | Type | Notes |\n|---|---|---|\n| id | bigint PK | |\n| event_id | bigint FK | → `events.id` |\n| user_id | bigint FK | → `users.id` |\n| content | text | |\n| type | enum(text\/image\/file) default text | |\n| file_url | varchar nullable | `storage\/app\/public\/chat-files\/` |\n| file_name | varchar nullable | |\n| timestamps | | |\n\n---",
+        "source": "docs\/database-schema.md#2-event-tables:chunk-3"
+    },
+    {
+        "text": "## 3. Social Tables\n\n### `connections`\n| Column | Type | Notes |\n|---|---|---|\n| id | bigint PK | |\n| requester_id | bigint FK | → `users.id` |\n| receiver_id | bigint FK | → `users.id` |\n| status | enum(pending\/accepted\/declined\/blocked) default pending | |\n| timestamps | | |\n| **Unique** | `(requester_id, receiver_id)` | |\n| **Index** | `(receiver_id, status)` | |\n| **Index** | `(requester_id, status)` | |\n\n### `connection_messages`\n| Column | Type | Notes |\n|---|---|---|\n| id | bigint PK | |\n| connection_id | bigint FK | → `connections.id` |\n| sender_id | bigint FK | → `users.id` |\n| message | text | |\n| type | enum(text\/image\/file) default text | |\n| file_url | varchar nullable | |\n| file_name | varchar nullable | |\n| timestamps | | |\n| **Index** | `(connection_id, created_at)` | |\n\n### `user_reviews`\n| Column | Type | Notes |\n|---|---|---|\n| id | bigint PK | |\n| reviewer_id | bigint FK | → `users.id` |\n| reviewed_user_id | bigint FK | → `users.id` |\n| rating | tinyint unsigned | 1–5 |\n| comment | text nullable | |\n| source_type | varchar(50) nullable | 'connection' or 'event' |\n| source_id | bigint nullable | FK to `connections` or `events` table |\n| timestamps | | |\n| **Unique** | `(reviewer_id, reviewed_user_id, source_type)` | |\n\n---",
+        "source": "docs\/database-schema.md#3-social-tables"
+    },
+    {
+        "text": "## 4. Venue Tables\n\n### `venues`\n| Column | Type | Notes |\n|---|---|---|\n| id | bigint PK | |\n| name | varchar | |\n| sport_id | bigint FK | → `sports.id` |\n| address | varchar | |\n| area | varchar | |\n| latitude | decimal(10,8) nullable | |\n| longitude | decimal(11,8) nullable | |\n| open_hours | varchar nullable | e.g. \"06:00-22:00\" |\n| description | text nullable | |\n| price_estimate | varchar nullable | |\n| contact | varchar nullable | |\n| image_url | varchar nullable | |\n| is_active | boolean default true | |\n\n### `venue_slots`\n| Column | Type | Notes |\n|---|---|---|\n| id | bigint PK | |\n| venue_id | bigint FK | → `venues.id` |\n| day_of_week | tinyint | 0=Sun, 1=Mon, ..., 6=Sat |\n| start_time | time | |\n| end_time | time | |\n| price | decimal nullable | |\n| is_available | boolean default true | |\n\n---",
+        "source": "docs\/database-schema.md#4-venue-tables"
+    },
+    {
+        "text": "## 5. Legacy Tables\n\n| Table | Notes |\n|---|---|\n| `fields` | Legacy — 8 seeded records, kept for `FieldAvailabilityController` |\n| `time_slots` | Legacy — 88 seeded records |\n| `games` | Legacy — parallel to events system |\n| `game_matches` | Legacy |\n\n---",
+        "source": "docs\/database-schema.md#5-legacy-tables"
+    },
+    {
+        "text": "## 5b. Notification Table (July 2026)\n\n### `notifications`\n| Column | Type | Notes |\n|---|---|---|\n| id | bigint PK | |\n| user_id | bigint FK | → `users.id` ON DELETE CASCADE |\n| type | varchar | `'join_request'` \\| `'join_approved'` \\| `'join_rejected'` \\| `'challenge_invite'` \\| `'challenge_accepted'` \\| `'challenge_declined'` |\n| title | varchar | Short heading for the bell dropdown |\n| body | text nullable | Longer description text |\n| action_url | varchar nullable | URL to redirect to when notification is opened |\n| read_at | timestamp nullable | NULL = unread; set to `now()` on open or read-all |\n| timestamps | | created_at, updated_at |\n| **Index** | `(user_id, read_at)` | Fast unread-count query |\n\n---",
+        "source": "docs\/database-schema.md#5b-notification-table-july-2026"
+    },
+    {
+        "text": "## 5c. AI Assistant Tables (June 2026)\n\n### `chat_sessions`\n| Column | Type | Notes |\n|---|---|---|\n| id | bigint PK | |\n| user_id | bigint FK | → `users.id` ON DELETE CASCADE |\n| title | varchar nullable | Auto-set from first user message (Str::limit 50) |\n| timestamps | | |\n| **Index** | `user_id` | |\n| **Index** | `(user_id, updated_at)` | Recent-first ordering |\n\n### `chat_messages`\n| Column | Type | Notes |\n|---|---|---|\n| id | bigint PK | |\n| session_id | bigint FK | → `chat_sessions.id` ON DELETE CASCADE |\n| role | enum('user','assistant') | |\n| content | text | |\n| tokens_used | unsignedInteger nullable | From Gemini `usageMetadata.totalTokenCount` |\n| timestamps | | |\n| **Index** | `(session_id, created_at)` | Threaded fetch order |\n\n---",
+        "source": "docs\/database-schema.md#5c-ai-assistant-tables-june-2026"
+    },
+    {
+        "text": "## 6. Migration Files Reference\n\n---",
+        "source": "docs\/database-schema.md#6-migration-files-reference"
+    },
+    {
+        "text": "## 7. Skill Level Migration (One-Time Maintenance)\n\n⚠️ Run once via Tinker to convert legacy `skill_levels` data to new structured format:\n\n**Converts:**\n- `[\"Beginner\",\"Intermediate\",...]` → `[{value:1,name:\"Beginner\"},...]`\n- `[1,2,3,4,5]` → `[{value:1,name:\"Level 1\"},...]`\n- Already-structured data → skipped (idempotent)",
+        "source": "docs\/database-schema.md#7-skill-level-migration-one-time-maintenance"
+    },
+    {
+        "text": "# Features\n\n> PlayMate — Feature Explanations\n> Last updated: July 2026\n\n---",
+        "source": "docs\/features.md#features"
+    },
+    {
+        "text": "## 1. Multi-Sport System\n\n- 3 sports: **Tennis** (NTRP 1.0–7.0, 12 levels), **Badminton** (8 levels), **Padel** (7 levels)\n- Each sport has its own skill level naming system\n- `user_sports` pivot: multiple sports per user, each with independent skill level\n- Skill values normalized to `skill_number` (1–10) via `Sport::normalizeSkill()` before storage and matchmaking\n\n---",
+        "source": "docs\/features.md#1-multi-sport-system"
+    },
+    {
+        "text": "## 2. Advanced User Profiles\n\n- Fields: bio, avatar photo, gender, age_range, GPS coordinates, play_style\n- **Avatar upload:** Stored at `storage\/app\/public\/avatars\/`, shown in profile\/connections\/chat\n- **Multiple sports** per user with per-sport:\n  - Skill level (sport-specific label + normalized number)\n  - Play style override\n  - Preferred start\/end time (from\/to time pickers)\n  - Preferred days (Su–Sa CSS toggle buttons → stored as `[0,1,2,3,4,5,6]`)\n- Last active timestamp for activity scoring in matchmaking\n\n---",
+        "source": "docs\/features.md#2-advanced-user-profiles"
+    },
+    {
+        "text": "## 3. 5-Component AI Matchmaking v2\n\nSee `docs\/matchmaking-algorithm.md` for full details.\n\n**Summary:**\n- Sport (30%) + Skill (30%) + Time (20%) + Distance (15%) + Activity (5%)\n- Band-based skill decay, continuous `exp(-d\/10)` distance decay, 5-tier activity\n- Per-component score breakdown for UI\n- Mutual connections count displayed per card\n- Connection state-aware buttons (no N+1 queries — pre-loaded in controller)\n- Minimum score threshold filter (25–50%)\n- Exclude connected users filter\n- **Top Match popup** for strong matches (score ≥ 0.75, same sport, ≥2 strong factors or mutual) — only shown after user clicks Search, not on page load. No confetti — clean score ring + component bars\n\n---",
+        "source": "docs\/features.md#3-5-component-ai-matchmaking-v2"
+    },
+    {
+        "text": "## 4. Event Hosting System\n\n- Host creates event: sport, venue, GPS, max_slots, price, visibility, match type\n- **Auto-join host:** Host automatically added as first participant (status `approved`, slot 1)\n- Join\/leave\/cancel with full participant list\n- **Challenge flow:** `⚔️ Challenge!` dari matchmaking → `GET \/events\/challenge\/{user}` → `host-game.blade.php` (dark-theme challenge form dengan opponent banner) → post ke `events.store` → lawan di-invite sebagai pending participant (`is_invite=true`, slot 2) → **notifikasi `challenge_invite` dikirim ke lawan**\n- **Approval system:** Jika `approval_required=true`, join request masuk status `pending`; host approve\/decline via `\/my-events\/host-requests`. **Notifikasi `join_request` dikirim ke host, notifikasi `join_approved`\/`join_rejected` dikirim kembali ke pemain setelah host merespons.**\n- **\"Host a Game\" is Challenge flow only.** `host-game.blade.php` adalah form challenge, bukan tipe game terpisah. Membuat record `Event` standar dengan `visibility=private`.\n\n---",
+        "source": "docs\/features.md#4-event-hosting-system"
+    },
+    {
+        "text": "## 5. Group Chat (Per Event)\n\n- Text, image, file support with file uploads to `storage\/app\/public\/chat-files\/`\n- **Auth rule:** Only approved participants or host can access (`canAccessChat()`)\n- Delete own messages only\n\n---",
+        "source": "docs\/features.md#5-group-chat-per-event"
+    },
+    {
+        "text": "## 6. My Events Dashboard\n\n- **Tabs:** Upcoming, Hosted (dengan amber badge pending-request), Waiting, Pending, **Incoming Challenges** (badge terpisah), Past, Cancelled\n- Hosted events menampilkan jumlah pending request yang menautkan ke halaman host-requests\n- **Incoming Challenges tab:** Menampilkan challenge invite yang masuk ke user sebagai lawan (`is_invite=true`, `status=pending`). User bisa Accept atau Decline langsung dari tab ini.\n\n---",
+        "source": "docs\/features.md#6-my-events-dashboard"
+    },
+    {
+        "text": "## 7. Host Approval System\n\n- `\/my-events\/host-requests` menampilkan semua pending join request dari event yang di-host user\n- Setiap card: avatar, nama, tag gender\/umur\/play_style, olahraga + skill level, rating bintang\n- **Approve:** Set status ke `approved`, assign `slot_number` berikutnya, posting system message ke event chat, **kirim notifikasi `join_approved` ke pemain**\n- **Decline:** Set status ke `rejected`, posting system message ke event chat, **kirim notifikasi `join_rejected` ke pemain**\n- **403** untuk non-host\n- Tombol Approve **di-disable jika event sudah penuh**\n\n---",
+        "source": "docs\/features.md#7-host-approval-system"
+    },
+    {
+        "text": "## 7a. Challenge Approval (Opponent Flow)\n\nAlur ketika seorang pemain di-challenge melalui fitur matchmaking:\n\n1. Challenger membuat event via `host-game.blade.php` dengan `opponent_id` di form\n2. `EventController@store` membuat `EventParticipant` dengan `is_invite=true`, `status=pending` untuk lawan\n3. Notifikasi `challenge_invite` dikirim ke lawan\n4. Lawan melihat challenge di tab **Incoming Challenges** pada halaman My Events\n5. **Accept** (`POST \/my-events\/challenges\/{participant}\/accept`): status → `approved`, notifikasi `challenge_accepted` dikirim ke challenger\n6. **Decline** (`POST \/my-events\/challenges\/{participant}\/decline`): status → `rejected`, notifikasi `challenge_declined` dikirim ke challenger\n\n> Perbedaan kunci: `is_invite=false` = join request biasa (dikelola host); `is_invite=true` = challenge invite (dikelola lawan).\n\n---",
+        "source": "docs\/features.md#7a-challenge-approval-opponent-flow"
+    },
+    {
+        "text": "## 8. Venue Discovery\n\n**Scope:** Read-only directory for reference when hosting events. Booking and court availability are intentionally out of scope.\n\n- **Index:** Filter by sport and area\/city. Card grid shows venue name, sport type, full address, operating hours, estimated price (as reference only)\n- **Detail:** Venue info panel, 3-column info cards (Sport \/ Hours \/ Area), Leaflet map (dark tile, orange marker — only if lat\/lng set), \"Host an Event Here\" CTA → `events.create?venue_id=X`\n- **Price estimate:** Displayed with label \"contact venue to confirm\" — not a bookable rate\n- **Notice box:** Clarifies directory purpose; directs users to contact venue for booking\n- **No `VenueSlot` data rendered** on user-facing pages\n- **Data source:** Venue data scraped from **ayo.co.id**. 19 venues, all in Kota Tangerang Selatan. All have `latitude`\/`longitude` set.\n- **Admin:** VenueResource in Filament uses Pinpoint map picker to set `latitude`\/`longitude`\n- **Geocoding command:** `php artisan venue:geocode` — uses OpenStreetMap Nominatim to geocode venues with NULL lat\/lng. Skips venues that already have coordinates (override with `--all`).",
+        "source": "docs\/features.md#8-venue-discovery"
+    },
+    {
+        "text": "## 8a. Venue Autocomplete (on Event Forms)\n\nWhen creating an event or challenging a player, the **venue name field** is replaced by a live autocomplete picker:\n\n- User types → debounce 250ms → `GET \/venues\/search?q=` → dropdown list (max 8)\n- Each result: sport badge + venue name + area\/address + 📍 pin if coordinates available\n- **Selecting a venue** automatically:\n  1. Fills `venue_name` hidden input\n  2. Dispatches `CustomEvent('playmate:venue-selected')` → map-picker pans to venue coordinates\n- Manual typing still allowed — user can enter any venue name not in the database\n- Both `events\/create.blade.php` and `host-game.blade.php` use `<x-venue-picker>`\n\n---",
+        "source": "docs\/features.md#8a-venue-autocomplete-on-event-forms"
+    },
+    {
+        "text": "## 9. Public Landing Page\n\n- Sticky nav, hero section with stats, feature cards, sports section, footer CTA\n- Role-aware nav: guests see Login\/Get Started; auth sees full nav\n\n---",
+        "source": "docs\/features.md#9-public-landing-page"
+    },
+    {
+        "text": "## 10. Connection System\n\n- **Send request:** Duplicate prevention via unique constraint on `(requester_id, receiver_id)`\n- **Accept \/ Decline \/ Block:** Receiver-only actions via `PATCH \/connections\/{connection}`\n- **Public `\/players\/{user}` profile** with Connect button\n- **My Connections page:** Three tabs — Incoming (Accept\/Decline), Sent (pending), My Connections (Chat\/View\/Review)\n\n---",
+        "source": "docs\/features.md#10-connection-system"
+    },
+    {
+        "text": "## 11. Private Chat (DMs)\n\n- Per-connection message thread (text + image + file)\n- Files uploaded to `storage\/app\/public\/chat-files\/`\n- Auto-scroll to latest message, timestamps, message bubbles\n- **File mime\/size validation:** Not yet implemented (see known issues)\n\n---",
+        "source": "docs\/features.md#11-private-chat-dms"
+    },
+    {
+        "text": "## 12. User Review System\n\n- Interactive 1–5 star rating with JS\n- Comment textarea\n- **Source tracking:** `source_type` ('connection' or 'event') + `source_id` FK\n- **Duplicate prevention:** Unique constraint on `(reviewer_id, reviewed_user_id, source_type)`\n- Reviews displayed on public player profile (`players\/profile.blade.php`)\n\n---",
+        "source": "docs\/features.md#12-user-review-system"
+    },
+    {
+        "text": "## 13. Location System\n\n**Package:** `fahiem\/filament-pinpoint` v1.1.6 — Leaflet + OpenStreetMap (no API key).\n\n**Filament Admin (VenueResource):** Uses `Pinpoint::make('location')` with address search (Nominatim), click\/drag pin, reverse geocoding, \"Use My Location\" button.\n\n**User-facing:** `<x-map-picker>` Blade component at `resources\/views\/components\/map-picker.blade.php`. Used in `profile.blade.php` and `events\/create.blade.php`.\n\n**Vendor override:** `resources\/views\/vendor\/filament-pinpoint\/pinpoint-leaflet.blade.php` fixes map clipping, `x-cloak` conflict, z-index issues, and autocomplete.\n\n---",
+        "source": "docs\/features.md#13-location-system"
+    },
+    {
+        "text": "## 14. Filament Admin Panel\n\nSee `docs\/filament.md` for full details.\n\n---",
+        "source": "docs\/features.md#14-filament-admin-panel"
+    },
+    {
+        "text": "## 15. Seeded Demo Data\n\n- Sports: 3 (Tennis, Badminton, Padel with proper skill levels)\n- Venues: 8 (3 tennis, 3 badminton, 2 padel — Jakarta\/Bekasi area)\n- Users: 32 Indonesian profiles with GPS coordinates and varied skills\n- Events: 8 mixed tennis\/badminton\/padel\n- Connections, reviews, fields, time_slots seeded\n\n**Demo login:** `rizky@example.com` \/ `password`\n\n---",
+        "source": "docs\/features.md#15-seeded-demo-data"
+    },
+    {
+        "text": "## 16a. Notification System (July 2026)\n\nSistem notifikasi in-app sederhana berbasis tabel `notifications` kustom (bukan Laravel's built-in polymorphic notifications).\n\n**Tipe notifikasi yang didukung:**\n\n| Type | Trigger | Penerima |\n|---|---|---|\n| `join_request` | Pemain join event dengan `approval_required=true` | Host |\n| `join_approved` | Host approve join request | Pemain |\n| `join_rejected` | Host reject join request | Pemain |\n| `challenge_invite` | Event dibuat via challenge flow | Lawan (opponent) |\n| `challenge_accepted` | Lawan menerima challenge | Challenger (host) |\n| `challenge_declined` | Lawan menolak challenge | Challenger (host) |\n\n**Implementasi:**\n- Model: `Notification` — fillable: `user_id, type, title, body, action_url, read_at`\n- `User::notifications()` — override dari Notifiable, menggunakan tabel kustom, ordered by `created_at desc`\n- `User::unreadNotifications()` — scope `whereNull('read_at')`\n- Bell dropdown ditampilkan di navbar melalui `layouts\/app.blade.php`\n- **Buka notifikasi:** `GET \/notifications\/{id}\/open` → mark as read → redirect ke `action_url`\n- **Tandai semua dibaca:** `POST \/notifications\/read-all`\n\n---",
+        "source": "docs\/features.md#16a-notification-system-july-2026"
+    },
+    {
+        "text": "## 17. AI Assistant (RAG Chatbot — June 2026)\n\nLogin-only RAG-backed chatbot, reachable from a floating launcher on every authenticated page or full-page at `\/chat`.\n\n- **Knowledge source:** chunks generated from `docs\/*.md` by `php artisan rag:build` (split ~1500 chars by H2 heading). Stored at `storage\/app\/private\/rag\/chunks.json` + `embeddings.json`.\n- **Embedding model:** `gemini-embedding-001` (3072-dim). **Stable model ID** — `text-embedding-004` was retired May 2025; rebuilding on old ID would silently produce a different dim and corrupt similarity. See `docs\/known-issues.md`.\n- **Retrieval:** Top-5 chunks by cosine similarity (computed in PHP). Each chunk: `{id, source, section, content, embedding[]}`.\n- **Prompt budget:** Truncate to fit `gemini-2.0-flash`'s 1M-token context, but stay under ~3000 tokens total input for free-tier RPM safety.\n- **Persistence:** `chat_sessions` (per-user) + `chat_messages` (role: `user` \/ `assistant`, with `tokens_used`).\n- **Launch points:**\n  - **Floating widget** on every authenticated page (`<x-chatbot-launcher \/>` in `layouts\/app.blade.php`).\n  - **Full page** at `\/chat` (sidebar list + main thread, like ChatGPT).\n- **Rate limit:** 30 messages \/ 10 min per user (`throttle:30,10` middleware).\n- **Out of scope (v1):** Streaming responses (use simple POST → JSON reply; SSE can be added later), Q&A only (no function calling to other services).",
+        "source": "docs\/features.md#17-ai-assistant-rag-chatbot-june-2026"
+    },
+    {
+        "text": "# Filament Admin Panel\n\n> PlayMate — Filament v5 Admin Reference\n> URL: `\/admin` (requires `role = admin`)\n> Last updated: June 2026\n\n---",
+        "source": "docs\/filament.md#filament-admin-panel"
+    },
+    {
+        "text": "## 1. Access Control\n\nThe Filament admin panel is gated to users with `role = 'admin'` only.\n\n**Implementation:** `User` model implements `FilamentUser` interface:\n\n**Admin users:** Set `role = 'admin'` in DB or via Filament Users resource. Default is `'user'`.\n\n---",
+        "source": "docs\/filament.md#1-access-control"
+    },
+    {
+        "text": "## 2. Resources\n\nAll resources auto-discovered via `discoverResources(in: app_path('Filament\/Resources'))`.\n\n| Resource | Model | Status | Notes |\n|---|---|---|---|\n| `UserResource` | User | ✅ Active | Full CRUD, role field (admin\/user badge), email, password |\n| `EventResource` | Event | ✅ Active | Full event CRUD |\n| `EventParticipantResource` | EventParticipant | ✅ Active | Status badge (pending\/approved\/rejected), slot_number, joined_at |\n| `SportResource` | Sport | ✅ Active | Multi-sport definitions with skill levels |\n| `VenueResource` | Venue | ✅ Active | Venue CRUD with **Filament Pinpoint** map picker |\n| `EventMessageResource` | EventMessage | ✅ Read-only | Chat messages — index only, no Create\/Edit |\n| `FieldResource` | Field | ❌ Deleted | Legacy court booking — removed June 2026 |\n| `TimeSlotResource` | TimeSlot | ❌ Deleted | Legacy booking slots — removed June 2026 |\n| `GameMatchResource` | GameMatch | ❌ Deleted | Unused (0 DB rows) — removed June 2026 |\n\n---",
+        "source": "docs\/filament.md#2-resources"
+    },
+    {
+        "text": "## 3. VenueResource — Filament Pinpoint\n\nUses `Fahiem\\FilamentPinpoint\\Pinpoint` form component in `VenueForm`:\n\n**Features:**\n- Address search via Nominatim (no API key needed)\n- Click\/drag map marker to set location\n- Reverse geocoding on pin move\n- \"Use My Location\" browser geolocation button\n\n---",
+        "source": "docs\/filament.md#3-venueresource-filament-pinpoint"
+    },
+    {
+        "text": "## 4. Filament Pattern (v5)\n\n- **List pages:** `ListXxx.php` extends `ListRecords`\n- **Form pages:** `EditXxx.php` extends `EditRecord`\n- **Schemas:** Use `Form::configure(fn(Schema $s) => ...)` \/ `Table::configure(fn(Table $t) => ...)`\n- **Navigation icons:** `Heroicon::OutlinedXxx` (not string names)\n\n---",
+        "source": "docs\/filament.md#4-filament-pattern-v5"
+    },
+    {
+        "text": "## 5. Vendor Override — Filament Pinpoint\n\n**File:** `resources\/views\/vendor\/filament-pinpoint\/pinpoint-leaflet.blade.php`\n\nOverrides the package's original Blade view with the following fixes (May 2026):\n\n| Fix | Detail |\n|---|---|\n| Map clipping | `overflow:clip` → `overflow:hidden` on map container |\n| Tile recalculation | `map.invalidateSize()` added in `selectSearchResult()` and `onSearchInput()` |\n| `x-cloak` conflict | Removed `x-cloak` from search results; added explicit `x-transition` classes |\n| Z-index layering | `z-index: 0 !important` on `.leaflet-container` (keeps map below dropdown `z-index: 9999`) |\n| Autocomplete interference | `autocomplete=\"off\"` added to search input |\n\n---",
+        "source": "docs\/filament.md#5-vendor-override-filament-pinpoint"
+    },
+    {
+        "text": "## 6. Known Dark Mode Issue ⚠️\n\n**Severity: Medium**\n\nThe Nominatim search results dropdown renders as a white box with invisible text in Filament dark mode (works correctly in light mode).\n\n**Workaround:** Use light mode, or select location by clicking\/dragging the map marker instead of using address search.\n\n**Fix pending:** CSS color contrast issue in the vendor override at `resources\/views\/vendor\/filament-pinpoint\/pinpoint-leaflet.blade.php`.",
+        "source": "docs\/filament.md#6-known-dark-mode-issue"
+    },
+    {
+        "text": "# General Information\n\n> PlayMate — Pengenalan dan Informasi Umum\n> Last updated: July 2026\n\n---",
+        "source": "docs\/general-info.md#general-information"
+    },
+    {
+        "text": "## Apa itu PlayMate?\n\nPlayMate adalah platform sosial olahraga (sports social platform) yang dirancang khusus untuk membantu penggunanya menemukan lawan main (matchmaking) yang sepadan dan mengadakan atau mengikuti pertandingan (events). Aplikasi ini berfokus pada tiga jenis olahraga raket utama: Tennis, Badminton, dan Padel.\n\nTujuan utama PlayMate adalah mempermudah para penggemar olahraga untuk tetap aktif, bertemu teman baru yang memiliki hobi yang sama, serta mengatasi kesulitan dalam mencari lawan main dengan level kemampuan yang setara.",
+        "source": "docs\/general-info.md#apa-itu-playmate"
+    },
+    {
+        "text": "## Fitur Utama PlayMate\n\n- **Matchmaking Berbasis AI (AI Matchmaking):** Sistem secara cerdas akan mencocokkan Anda dengan pemain lain berdasarkan 5 faktor utama: olahraga yang dipilih, tingkat kemahiran (skill level), preferensi waktu bermain, jarak lokasi geografis, dan tingkat keaktifan.\n- **Event Hosting (Mengadakan Pertandingan):** Pengguna dapat membuat acara pertandingan (event) sendiri, menentukan lokasi, waktu, batas peserta, serta harga patungan lapangan. Pengguna lain kemudian dapat bergabung (join) ke dalam event tersebut.\n- **Multi-Sport Profiles:** Satu akun pengguna dapat memiliki profil kemampuan yang berbeda-beda untuk Tennis, Badminton, dan Padel.\n- **Sistem Koneksi & Chatting:** Setelah pengguna merasa cocok atau pernah bermain bersama, mereka dapat membuat koneksi (connection) dan saling mengirim pesan pribadi (chat).\n- **Asisten Virtual (PlayMate Assistant):** Chatbot pintar yang siap menjawab pertanyaan seputar fitur, aturan main, dan cara menggunakan aplikasi PlayMate.",
+        "source": "docs\/general-info.md#fitur-utama-playmate"
+    },
+    {
+        "text": "## Untuk Siapa PlayMate Dibuat?\n\nPlayMate dibuat untuk semua kalangan, mulai dari pemula yang baru belajar cara mengayun raket hingga pemain tingkat lanjut yang mencari pertandingan kompetitif. Semua orang bisa bergabung, mengisi level kemampuan mereka secara jujur, dan mulai mencari teman bermain!",
+        "source": "docs\/general-info.md#untuk-siapa-playmate-dibuat"
+    },
+    {
+        "text": "# Known Issues & Technical Debt\n\n> PlayMate — Issues Tracker\n> Last updated: June 2026\n\n---",
+        "source": "docs\/known-issues.md#known-issues-technical-debt"
+    },
+    {
+        "text": "## 1. Known Issues\n\n| Issue | Severity | Workaround | Status |\n|---|---|---|---|\n| Filament Pinpoint search dropdown blank in dark mode | Medium | Use light mode or click\/drag map marker for location | **Pending fix** — CSS contrast in vendor override |\n| Chat file uploads unvalidated for type\/size | Low | No validation yet — should add mime\/size validation | Not started |\n| No pagination on matchmaking results | Low | All matched users loaded at once | Not started |\n| `Field` + `TimeSlot` are legacy | Low | Kept for `FieldAvailabilityController` | Not started |\n| RAG index `storage\/app\/private\/rag\/` not in git | Low | Run `php artisan rag:build` after `git pull` if `docs\/` changed | Documented |\n| Gemini API key required to run bot | Low | Set `GEMINI_API_KEY` in `.env`; bot endpoints return 502 if missing | Documented |\n| Venue Nominatim geocoding fails for Indonesian venue names | Low | Use `php artisan venue:geocode` — will skip venues Nominatim can't find. Set coordinates manually via Tinker or Filament admin. | Workaround available |\n| Embedding model drift | High | Always pin `gemini-embedding-001`. Old `text-embedding-004` returns different dim → corrupts cosine similarity | Resolved June 2026 |\n\n---",
+        "source": "docs\/known-issues.md#1-known-issues"
+    },
+    {
+        "text": "## 2. Resolved Issues (June 2026)\n\n| Issue | Fixed By | Detail |\n|---|---|---|\n| 17\/19 venues had NULL latitude\/longitude — map not shown | Manual Tinker + `venue:geocode` command | Coordinates set based on address\/area. All 19 venues now have lat\/lng |\n| `events\/create.blade.php` used light\/white theme | Full rewrite June 2026 | Now uses `pm-card`, `pm-input`, `pm-btn-primary` — consistent with dark theme |\n| Map not updating when venue selected from autocomplete | `CustomEvent('playmate:venue-selected')` + `_pending` buffer | Map-picker now listens for venue selection event; handles race condition if Leaflet still loading |\n| Duplicate `name=\"latitude\"` from two components | Field ownership split | `venue-picker` owns `venue_name` only; `map-picker` owns `latitude` + `longitude`. `addr-id=\"map_address\"` avoids clash |\n| `GameController` + `Game` model dead code | Deleted June 2026 | No routes, views, or references. `GameMatch` kept for `User::gameMatches()` |",
+        "source": "docs\/known-issues.md#2-resolved-issues-june-2026"
+    },
+    {
+        "text": "## 3. Historical Resolved Issues\n\n| Issue | Fixed By | Detail |\n|---|---|---|\n| Filament Pinpoint map clipped when search dropdown opens | May 2026 vendor override | `overflow:clip` → `overflow:hidden` + `map.invalidateSize()` calls + `z-index: 0` on leaflet container |\n| Filament Pinpoint `x-cloak` conflict | May 2026 vendor override | Removed `x-cloak`, added `x-transition` classes, added `autocomplete=\"off\"` |\n| `acceptedConnections()` SQL error | Static `Connection::where()` builder | `hasMany` with `where()` prepends invalid `user_id` constraint — must use static builder |\n| `sports.*.sport_id` validation rejected empty rows | `nullable` validation rule | Changed from `required` to `nullable` in `ProfileController` |\n| Raw lat\/lng number inputs in user forms | Map picker component | R",
+        "source": "docs\/known-issues.md#3-historical-resolved-issues:chunk-0"
+    },
+    {
+        "text": "omplete=\"off\"` |\n| `acceptedConnections()` SQL error | Static `Connection::where()` builder | `hasMany` with `where()` prepends invalid `user_id` constraint — must use static builder |\n| `sports.*.sport_id` validation rejected empty rows | `nullable` validation rule | Changed from `required` to `nullable` in `ProfileController` |\n| Raw lat\/lng number inputs in user forms | Map picker component | Replaced with `<x-map-picker>` Blade component |\n| Map tiles not rendering | Leaflet in `<head>` + `invalidateSize()` | Leaflet CSS\/JS moved before Alpine; `map.invalidateSize()` called on init |\n| Branding \"SportsMatch\" in nav | Updated in `layouts\/app.blade.php` | Now \"PlayMate\" + \"PM\" logo |\n| `foreach() must be of type array\\|object` on `\/profile` | `Sport::getSkillLevels()` always returns arra",
+        "source": "docs\/known-issues.md#3-historical-resolved-issues:chunk-1"
+    },
+    {
+        "text": "eplaced with `<x-map-picker>` Blade component |\n| Map tiles not rendering | Leaflet in `<head>` + `invalidateSize()` | Leaflet CSS\/JS moved before Alpine; `map.invalidateSize()` called on init |\n| Branding \"SportsMatch\" in nav | Updated in `layouts\/app.blade.php` | Now \"PlayMate\" + \"PM\" logo |\n| `foreach() must be of type array\\|object` on `\/profile` | `Sport::getSkillLevels()` always returns array | Never accesses `$this->skill_levels` directly in `getSkillLabel()` |\n| Legacy `skill_levels` format causing crashes | Auto-conversion in `getSkillLevels()` | Detects and converts legacy string\/numeric arrays at runtime |\n| Events browse page showing no events | Event date range fix | `EventController::index` now queries `start_time >= now()->subDays(90)` to `now()->addYear()` |\n| Matchmaking \"",
+        "source": "docs\/known-issues.md#3-historical-resolved-issues:chunk-2"
+    },
+    {
+        "text": "y | Never accesses `$this->skill_levels` directly in `getSkillLabel()` |\n| Legacy `skill_levels` format causing crashes | Auto-conversion in `getSkillLevels()` | Detects and converts legacy string\/numeric arrays at runtime |\n| Events browse page showing no events | Event date range fix | `EventController::index` now queries `start_time >= now()->subDays(90)` to `now()->addYear()` |\n| Matchmaking \"Connect\" button shown for already-connected users | Connection state pre-loading | `MatchmakingController::index` pre-loads all states in single query — no N+1 |\n| Asymmetric time score scoring | Symmetric fallback | Both users without\/with preferences now score `0.5 + (dayScore * 0.5)` |\n| Score bar wrong percentage | Correct formula | `round($comp['score'] \/ $comp['weight'] * 100)` instead of ha",
+        "source": "docs\/known-issues.md#3-historical-resolved-issues:chunk-3"
+    },
+    {
+        "text": "Connect\" button shown for already-connected users | Connection state pre-loading | `MatchmakingController::index` pre-loads all states in single query — no N+1 |\n| Asymmetric time score scoring | Symmetric fallback | Both users without\/with preferences now score `0.5 + (dayScore * 0.5)` |\n| Score bar wrong percentage | Correct formula | `round($comp['score'] \/ $comp['weight'] * 100)` instead of hardcoded `0.30` divisor |",
+        "source": "docs\/known-issues.md#3-historical-resolved-issues:chunk-4"
+    },
+    {
+        "text": "rdcoded `0.30` divisor |",
+        "source": "docs\/known-issues.md#3-historical-resolved-issues:chunk-5"
+    },
+    {
+        "text": "# Matchmaking Algorithm — 5-Component Scoring Engine v2\n\n> PlayMate — AI Matchmaking Reference\n> File: `app\/Services\/MatchmakingService.php`\n> Last updated: May 2026\n\n---",
+        "source": "docs\/matchmaking-algorithm.md#matchmaking-algorithm-5-component-scoring-engine-v2"
+    },
+    {
+        "text": "## 1. Scoring Weights\n\n| Component | Weight | Question Answered |\n|---|---|---|\n| Sport | 30% | Do both users play the same sport? |\n| Skill | 30% | Are they at similar skill levels? |\n| Time | 20% | Do their preferred times overlap? |\n| Distance | 15% | How close are they geographically? |\n| Activity | 5% | Is the user recently active? |\n\n---",
+        "source": "docs\/matchmaking-algorithm.md#1-scoring-weights"
+    },
+    {
+        "text": "## 2. Per-Component Scoring\n\n### 2.1 Sport Score (weight: 0.30)\n\n**v1 (old):** Binary — 1.0 if same sport, 0.0 otherwise.\n**v2:** Partial scores based on primary vs. secondary sport overlap (no filter).\n**v3 (current):** Two modes depending on whether `sport_id` filter is active.\n\n**Mode A — no sport filter** (free search):\n\n| Condition | Score |\n|---|---|\n| Both same primary sport | 1.0 |\n| One user's primary = other's secondary | 0.75 |\n| Same sport but neither primary | 0.5 |\n| No common sport | 0.0 |\n\n**Mode B — sport filter active** (`sport_id` set, opponents guaranteed to have it via `whereHas`):\n\n| Condition | Score |\n|---|---|\n| Both have filtered sport as primary | 1.0 |\n| Either has filtered sport as primary | 0.75 |\n| Searcher has it as secondary | 0.5 |\n| Searcher doesn't play ",
+        "source": "docs\/matchmaking-algorithm.md#2-per-component-scoring:chunk-0"
+    },
+    {
+        "text": "ser's primary = other's secondary | 0.75 |\n| Same sport but neither primary | 0.5 |\n| No common sport | 0.0 |\n\n**Mode B — sport filter active** (`sport_id` set, opponents guaranteed to have it via `whereHas`):\n\n| Condition | Score |\n|---|---|\n| Both have filtered sport as primary | 1.0 |\n| Either has filtered sport as primary | 0.75 |\n| Searcher has it as secondary | 0.5 |\n| Searcher doesn't play it at all | 0.35 |\n\n> **Why not 0.0 when searcher doesn't play it?** The explicit `sport_id` filter expresses intent — the user is looking for that sport. Returning 0.0 would make ranking dependent only on distance\/activity (remaining 40%), producing nonsensical ordering.\n\n### 2.2 Skill Score (weight: 0.30)\n\n**v1 (old):** Linear decay `1 - (diff \/ 10)`\n**v2 (new):** Band-based smooth decay\n\n| Skil",
+        "source": "docs\/matchmaking-algorithm.md#2-per-component-scoring:chunk-1"
+    },
+    {
+        "text": "it at all | 0.35 |\n\n> **Why not 0.0 when searcher doesn't play it?** The explicit `sport_id` filter expresses intent — the user is looking for that sport. Returning 0.0 would make ranking dependent only on distance\/activity (remaining 40%), producing nonsensical ordering.\n\n### 2.2 Skill Score (weight: 0.30)\n\n**v1 (old):** Linear decay `1 - (diff \/ 10)`\n**v2 (new):** Band-based smooth decay\n\n| Skill Difference | Score |\n|---|---|\n| 0 | 1.00 |\n| 1 | 0.95 |\n| 2 | 0.80 |\n| 3 | 0.60 |\n| 4 | 0.35 |\n| ≥5 | 0.15 |\n\nAll skills normalized to 1–10 scale before comparison. See `docs\/models.md` for normalization formula.\n\n### 2.3 Time Score (weight: 0.20)\n\n**v1 (old):** Binary `hasTimeOverlap()` — always returned `false` (column missing).\n**v2 (new):** Nuanced 0.0–1.0 based on:\n- **Time range overlap r",
+        "source": "docs\/matchmaking-algorithm.md#2-per-component-scoring:chunk-2"
+    },
+    {
+        "text": "l Difference | Score |\n|---|---|\n| 0 | 1.00 |\n| 1 | 0.95 |\n| 2 | 0.80 |\n| 3 | 0.60 |\n| 4 | 0.35 |\n| ≥5 | 0.15 |\n\nAll skills normalized to 1–10 scale before comparison. See `docs\/models.md` for normalization formula.\n\n### 2.3 Time Score (weight: 0.20)\n\n**v1 (old):** Binary `hasTimeOverlap()` — always returned `false` (column missing).\n**v2 (new):** Nuanced 0.0–1.0 based on:\n- **Time range overlap ratio** — what fraction of the overlapping time window exists\n- **Day intersection** — how many preferred days overlap\n\n**Symmetric fallback:** If only one user has time preferences, returns `0.5 + (dayScore * 0.5)`. Both directions now score fairly.\n\nReads from: `user_sports.preferred_start_time`, `user_sports.preferred_end_time`, `user_sports.preferred_days`.\n\n### 2.4 Distance Score (weight: 0.15",
+        "source": "docs\/matchmaking-algorithm.md#2-per-component-scoring:chunk-3"
+    },
+    {
+        "text": "atio** — what fraction of the overlapping time window exists\n- **Day intersection** — how many preferred days overlap\n\n**Symmetric fallback:** If only one user has time preferences, returns `0.5 + (dayScore * 0.5)`. Both directions now score fairly.\n\nReads from: `user_sports.preferred_start_time`, `user_sports.preferred_end_time`, `user_sports.preferred_days`.\n\n### 2.4 Distance Score (weight: 0.15)\n\n**v1 (old):** Discrete tier — 2km→high, 5km→medium, 10km→low, 20km→very low.\n**v2 (new):** Continuous exponential decay: `exp(-d \/ 10)`\n\n| Distance (km) | Score |\n|---|---|\n| 0 | 1.00 |\n| 5 | 0.61 |\n| 10 | 0.37 |\n| 15 | 0.22 |\n| 20 | 0.14 |\n| 30 | 0.05 |\n\n### 2.5 Activity Score (weight: 0.05)\n\n**v1 (old):** 3 tiers — ≤3 days→1.0, ≤7→0.75, ≤30→0.5, >30→0.0.\n**v2 (new):** 5 tiers using `last_acti",
+        "source": "docs\/matchmaking-algorithm.md#2-per-component-scoring:chunk-4"
+    },
+    {
+        "text": ")\n\n**v1 (old):** Discrete tier — 2km→high, 5km→medium, 10km→low, 20km→very low.\n**v2 (new):** Continuous exponential decay: `exp(-d \/ 10)`\n\n| Distance (km) | Score |\n|---|---|\n| 0 | 1.00 |\n| 5 | 0.61 |\n| 10 | 0.37 |\n| 15 | 0.22 |\n| 20 | 0.14 |\n| 30 | 0.05 |\n\n### 2.5 Activity Score (weight: 0.05)\n\n**v1 (old):** 3 tiers — ≤3 days→1.0, ≤7→0.75, ≤30→0.5, >30→0.0.\n**v2 (new):** 5 tiers using `last_active_at` column.\n\n| Days Since Active | Score |\n|---|---|\n| ≤3 | 1.00 |\n| ≤7 | 0.75 |\n| ≤30 | 0.50 |\n| ≤90 | 0.25 |\n| >90 | 0.00 |\n\n---",
+        "source": "docs\/matchmaking-algorithm.md#2-per-component-scoring:chunk-5"
+    },
+    {
+        "text": "ve_at` column.\n\n| Days Since Active | Score |\n|---|---|\n| ≤3 | 1.00 |\n| ≤7 | 0.75 |\n| ≤30 | 0.50 |\n| ≤90 | 0.25 |\n| >90 | 0.00 |\n\n---",
+        "source": "docs\/matchmaking-algorithm.md#2-per-component-scoring:chunk-6"
+    },
+    {
+        "text": "## 3. Filter Parameters\n\n| Filter | Type | Default | Notes |\n|---|---|---|---|\n| `sport_id` | int | null | Filter by specific sport |\n| `play_style` | string | null | 'casual' or 'competitive' |\n| `gender` | string | null | 'male', 'female', 'other' |\n| `age_range` | string | null | '18-25', '26-35', '36-50', '51+' |\n| `radius_km` | float | null | Haversine distance filter (applied in PHP, not SQL) |\n| `start_time` | time | null | Preferred playing time from |\n| `end_time` | time | null | Preferred playing time to |\n| `preferred_days` | array | [] | Day numbers 0=Sun…6=Sat |\n| `min_score` | float | 0.25 | Minimum match quality threshold |\n| `exclude_connected` | bool | false | Hide users with accepted connections |\n\n**⚠️ Radius filter in PHP, not SQL.**\nSQLite lacks trigonometric functions (`acos\/cos\/sin\/radians`) required for Haversine. Distance filter applied in `MatchmakingService` via `User::distanceFromUser()` after fetching candidates.\n\n---",
+        "source": "docs\/matchmaking-algorithm.md#3-filter-parameters"
+    },
+    {
+        "text": "## 4. Skill Systems per Sport\n\n| Sport | Scale | Labels |\n|---|---|---|\n| Tennis | 1–12 | 1.0 Beginner → 1.5 → 2.0 → ... → 5.5 → 6.0+ → 7.0 Elite |\n| Badminton | 1–8 | Beginner → Lower Intermediate → Intermediate → Upper Intermediate → Advanced → Competitive → Tournament → Elite |\n| Padel | 1–7 | Beginner → Casual → Improving → Intermediate → Advanced → Competitive → Elite |\n\n### Normalization Formula\n\n| Sport | Raw → Normalized |\n|---|---|\n| Tennis | 1→1, 6→5, 7→6, 12→10 |\n| Badminton | 1→1, 4→4, 8→10 |\n| Padel | 1→1, 4→5, 7→10 |\n\n---",
+        "source": "docs\/matchmaking-algorithm.md#4-skill-systems-per-sport"
+    },
+    {
+        "text": "## 5. Public API\n\n---",
+        "source": "docs\/matchmaking-algorithm.md#5-public-api"
+    },
+    {
+        "text": "## 6. Performance Optimizations (N+1 Fixes)\n\n**Problem:** Original implementation had ~218 DB queries per page load.\n\n### 6.1 `getMutualConnectionCounts()` — Batch Query + Adjacency List\n- **Before:** O(n) — one query per opponent\n- **After:** Single batch query for all users + in-memory adjacency list\n- **Impact:** 30 opponents: 31 queries → 1 query\n\n### 6.2 `calculateSportScore()` \/ `calculateSkillScore()` — Preloaded Collections\n- **Before:** `$user->userSports()->where()->first()` per call (ignores eager load)\n- **After:** Helper methods check `relationLoaded()` and use in-memory collection\n- **Impact:** 120 queries → 0 queries (uses preload)\n\n### 6.3 `getTimePreference()` — Collection-Aware\n- **Before:** `$user->userSports()->where()->first()` per call\n- **After:** Uses `getUserSportForSport()` helper that respects preloaded data\n- **Impact:** Eliminates per-user time preference queries\n\n### 6.4 `primarySportId()` — Collection-Aware\n- **Before:** Always queries `userSports()->orderBy()->first()`\n- **After:** Uses preloaded collection when available\n- **Impact:** Reduces redundant queries in badge generation\n\n**Total reduction:** ~218 queries → ~5 queries per page load (96% reduction).\n\n---",
+        "source": "docs\/matchmaking-algorithm.md#6-performance-optimizations-n-1-fixes"
+    },
+    {
+        "text": "## 7. Score Bar UI Fix\n\n**Bug:** Hardcoded divisor `0.30` (WEIGHT_SPORT) for all components.\n**Example:** Distance (weight 0.15, score 0.03) showed 10% instead of 20%.\n\n**Fix:**\n\n---",
+        "source": "docs\/matchmaking-algorithm.md#7-score-bar-ui-fix"
+    },
+    {
+        "text": "## 8. Criteria Match Summary\n\nAuto-generated per card:\n- **Green box:** \"✓ Strong match: Sport, Skill, Distance\" (raw score ≥ 0.7)\n- **Amber box:** \"⚠ Weak: Time, Activity\" (raw score < 0.3)\n\n---",
+        "source": "docs\/matchmaking-algorithm.md#8-criteria-match-summary"
+    },
+    {
+        "text": "## 9. Challenger Discovered Overlay\n\nTriggered when top match meets ALL criteria. Thresholds differ based on whether the filtered sport is the searcher's primary sport:\n\n| Criterion | Primary sport filter | Non-primary sport filter |\n|---|---|---|\n| Total score | ≥ 0.75 | ≥ 0.55 |\n| Sport score (`components['sport']['raw']`) | ≥ 0.75 | ≥ 0.75 |\n| Strong factors (component raw ≥ 0.7) | ≥ 2 or mutual | ≥ 1 or mutual |\n\n**Why lower thresholds for non-primary?** When filtering a sport that is not the searcher's primary, the sport score caps at 0.75 (instead of 1.0), which reduces the theoretical total score ceiling by ~0.075. Separate thresholds ensure the overlay fires fairly regardless of which sport is searched.\n\n`userPrimarySport` = `$user->userSports->sortBy('id')->first()?->sport_id` (first sport added = primary).\n\n**Challenge flow:**\n\n**Grid adjustment:** When reveal is shown, top match is excluded from paginated `gridResults`.\n\n---",
+        "source": "docs\/matchmaking-algorithm.md#9-challenger-discovered-overlay"
+    },
+    {
+        "text": "## 10. Filter Presets\n\n- **Storage:** Browser `localStorage` (`playmate_match_presets`)\n- **UI:** \"💾 Save Current Filters\" button + preset chips with delete option\n- **Use case:** User frequently searches \"Tennis Players Jakarta 4.0–5.0\" → save as preset\n\n---",
+        "source": "docs\/matchmaking-algorithm.md#10-filter-presets"
+    },
+    {
+        "text": "## See also\n\n- [docs\/architecture.md](architecture.md) — AI assistant integration\n- [docs\/features.md](features.md) § AI Assistant — UX details\n- `php artisan rag:build` — regenerate RAG index from this file",
+        "source": "docs\/matchmaking-algorithm.md#see-also"
+    },
+    {
+        "text": "# Models & Relationships\n\n> PlayMate — Models Reference\n> Last updated: July 2026\n\n---",
+        "source": "docs\/models.md#models-relationships"
+    },
+    {
+        "text": "## 1. Sport ⚠️ Critical Rule\n\n⚠️ **Never access `$sport->skill_levels` directly in Blade or PHP.**\nAlways use `$sport->getSkillLevels()` instead.\n\n### Supported `skill_levels` Formats (auto-adapted at runtime)\n\n| Format | Example | Conversion |\n|---|---|---|\n| New structured | `[{\"value\":1,\"name\":\"1.0 Beginner\"},...]` | Used as-is |\n| Legacy string | `[\"Beginner\",\"Intermediate\",...]` | Auto-converted → `[{value:N,name:\"Label\"},...]` |\n| Legacy numeric | `[1,2,3,...]` | Auto-converted → `[{value:N,name:\"Level N\"},...]` |\n\n### Methods\n\n**Label lookup uses `value` key, not array index** — safe even if `skill_levels` array order changes.\n\n### Skill Normalization\n\n**Formula:** `(value - 1) \/ (maxValue - 1) * 9 + 1`, then round, then clamp to 1–10\n\n| Sport | Scale | Endpoints normalized |\n|---|---|---|\n| Tennis | 1–12 | 1→1, 6→5, 7→6, 12→10 |\n| Badminton | 1–8 | 1→1, 4→4, 8→10 |\n| Padel | 1–7 | 1→1, 4→5, 7→10 |\n\n**Clamping:** `raw < 1` → clamped to 1; `raw > max` → clamped to max; result clamped to 1–10.\n\n---",
+        "source": "docs\/models.md#1-sport-critical-rule"
+    },
+    {
+        "text": "## 2. UserSport (Pivot)\n\n**On save (ProfileController):**\n- `skill_value` = human-readable label string — looked up by `value` key (not array index)\n- `skill_number` = normalized int 1–10 — guaranteed via `Sport::normalizeSkill()` with clamping\n- `preferred_start_time` \/ `preferred_end_time` = `HH:MM:SS` format\n- Deletes existing `user_sports` and recreates on update\n\n---",
+        "source": "docs\/models.md#2-usersport-pivot"
+    },
+    {
+        "text": "## 3. User\n\n### Relationships\n\n### Computed\n\n### Helpers\n\n---",
+        "source": "docs\/models.md#3-user"
+    },
+    {
+        "text": "## 4. Connection ⚠️\n\n### Relationships\n\n### Helpers\n\n⚠️ **CRITICAL:** `acceptedConnections()` in User model must use a static `Connection::where()` builder — NOT a `hasMany` relationship with a `where()` clause, because `hasMany` prepends `user_id = $id` which breaks the required OR logic.\n\n**Correct pattern:**\n\n---",
+        "source": "docs\/models.md#4-connection"
+    },
+    {
+        "text": "## 5. ConnectionMessage\n\n---",
+        "source": "docs\/models.md#5-connectionmessage"
+    },
+    {
+        "text": "## 6. UserReview\n\n---",
+        "source": "docs\/models.md#6-userreview"
+    },
+    {
+        "text": "## 7. Event\n\n### Relationships\n\n### Helpers\n\n---",
+        "source": "docs\/models.md#7-event"
+    },
+    {
+        "text": "## 8. EventParticipant\n\n> `isChallengeInvite()` returns `true` when `is_invite === true AND status === 'pending'`.\n> This is the gate used in `MyEventsController` to separate challenge invites from join requests.\n\n---",
+        "source": "docs\/models.md#8-eventparticipant"
+    },
+    {
+        "text": "## 9. EventMessage\n\n---",
+        "source": "docs\/models.md#9-eventmessage"
+    },
+    {
+        "text": "## 10. Venue\n\n---",
+        "source": "docs\/models.md#10-venue"
+    },
+    {
+        "text": "## 11. VenueSlot\n\n---",
+        "source": "docs\/models.md#11-venueslot"
+    },
+    {
+        "text": "## 12. Legacy Models\n\n| Model | File | Notes |\n|---|---|---|\n| Field | `Field.php` | Legacy — kept for `FieldAvailabilityController` |\n| TimeSlot | `TimeSlot.php` | Legacy |\n| Game | `Game.php` | Legacy — parallel to events |\n| GameMatch | `GameMatch.php` | Legacy — parallel to events |\n\n---",
+        "source": "docs\/models.md#12-legacy-models"
+    },
+    {
+        "text": "## 13. ChatSession (AI Assistant — June 2026)\n\n---",
+        "source": "docs\/models.md#13-chatsession-ai-assistant-june-2026"
+    },
+    {
+        "text": "## 14. ChatMessage (AI Assistant)\n\n---",
+        "source": "docs\/models.md#14-chatmessage-ai-assistant"
+    },
+    {
+        "text": "## 15. Notification (July 2026)\n\n",
+        "source": "docs\/models.md#15-notification-july-2026"
+    },
+    {
+        "text": "# Roadmap — Next Steps\n\n> PlayMate — Planned Improvements\n> Last updated: June 2026\n\n---",
+        "source": "docs\/roadmap.md#roadmap-next-steps"
+    },
+    {
+        "text": "## Shipped (June 2026)\n\n| # | Item | Notes |\n|---|---|---|\n| ✅ | **AI Assistant (RAG chatbot)** | Login-gated, Gemini 2.0 Flash + `gemini-embedding-001`, top-5 cosine sim from `docs\/`, floating widget + `\/chat` page. See `docs\/features.md` §16 |\n\n---",
+        "source": "docs\/roadmap.md#shipped-june-2026"
+    },
+    {
+        "text": "## High Priority\n\n| # | Item | Notes |\n|---|---|---|\n| 1 | **Responsive nav** | Add hamburger menu for mobile view |\n| 2 | **Event filtering** | Search + sport + date filters on `\/events` browse page |\n| 3 | **Profile completeness indicator** | Show % completeness on dashboard |\n| 4 | **PlayMate branding** | Custom logo and brand assets |\n\n---",
+        "source": "docs\/roadmap.md#high-priority"
+    },
+    {
+        "text": "## Medium Priority\n\n| # | Item | Notes |\n|---|---|---|\n| 5 | **Event recommendations** | Recommend events based on user's sport\/skill\/location |\n| 6 | **Cache matchmaking results** | Short TTL cache on `getRecommendations()` |\n| 7 | **Notification system** | Alert users for incoming connection requests |\n\n---",
+        "source": "docs\/roadmap.md#medium-priority"
+    },
+    {
+        "text": "## Low Priority\n\n| # | Item | Notes |\n|---|---|---|\n| 8 | **Add tests** | No test files exist yet |\n| 9 | **Soft deletes** | Add `deleted_at` to models |\n| 10 | **Activity log** | Track joins\/matches for analytics |\n| 11 | **Connection request expiry** | Auto-decline stale pending requests |\n| 12 | **ReviewResource** | Filament resource for managing user reviews in admin |",
+        "source": "docs\/roadmap.md#low-priority"
+    },
+    {
+        "text": "# Routes\n\n> PlayMate — Routes Reference\n> File: `routes\/web.php`\n> Last updated: July 2026\n\n---",
+        "source": "docs\/routes.md#routes"
+    },
+    {
+        "text": "## 1. Public Routes (No Auth Required)\n\n| Method | URI | Controller@Method | View |\n|---|---|---|---|\n| GET | `\/` | `DashboardController@index` | `welcome.blade.php` — Landing page |\n| GET | `\/events` | `EventController@index` | `events\/index` — Event grid |\n| GET | `\/venues` | `VenueController@index` | `venues\/index` |\n| GET | `\/venues\/search` | `VenueController@search` | JSON autocomplete (no view) |\n| GET | `\/venues\/{venue}` | `VenueController@show` | `venues\/show` |\n| GET | `\/players\/{user}` | `ConnectionController@playerProfile` | `players\/profile` |\n| GET | `\/login` | — | `auth\/login` |\n| POST | `\/login` | — | Auth attempt |\n| POST | `\/logout` | — | Destroy session |\n| GET | `\/register` | — | `auth\/register` |\n| POST | `\/register` | — | Create user + login |\n\n---",
+        "source": "docs\/routes.md#1-public-routes-no-auth-required"
+    },
+    {
+        "text": "## 2. Auth-Protected Routes\n\n### Dashboard\n| Method | URI | Controller@Method |\n|---|---|---|\n| GET | `\/dashboard` | `DashboardController@index` |\n| GET | `\/matchmaking` | `MatchmakingController@index` |\n\n### Events\n| Method | URI | Controller@Method |\n|---|---|---|\n| GET | `\/events\/create` | `EventController@create` |\n| POST | `\/events` | `EventController@store` |\n| GET | `\/events\/{event}` | `EventController@show` |\n| POST | `\/events\/{event}\/join` | `EventController@join` |\n| DELETE | `\/events\/{event}\/leave` | `EventController@leave` |\n| DELETE | `\/events\/{event}\/cancel` | `EventController@cancel` |\n| GET | `\/events\/challenge\/{user}` | `EventController@challenge` |\n\n### My Events\n| Method | URI | Controller@Method | Notes |\n|---|---|---|---|\n| GET | `\/my-events` | `MyEventsController@inde",
+        "source": "docs\/routes.md#2-auth-protected-routes:chunk-0"
+    },
+    {
+        "text": "ntController@show` |\n| POST | `\/events\/{event}\/join` | `EventController@join` |\n| DELETE | `\/events\/{event}\/leave` | `EventController@leave` |\n| DELETE | `\/events\/{event}\/cancel` | `EventController@cancel` |\n| GET | `\/events\/challenge\/{user}` | `EventController@challenge` |\n\n### My Events\n| Method | URI | Controller@Method | Notes |\n|---|---|---|---|\n| GET | `\/my-events` | `MyEventsController@index` | Tabs: Upcoming, Hosted, Waiting, Pending, Incoming Challenges, Past, Cancelled |\n| GET | `\/my-events\/host-requests` | `MyEventsController@hostRequests` | Pending join request queue |\n| POST | `\/my-events\/host-requests\/{participant}\/approve` | `MyEventsController@approve` | Host approves join request |\n| POST | `\/my-events\/host-requests\/{participant}\/reject` | `MyEventsController@reject` | Hos",
+        "source": "docs\/routes.md#2-auth-protected-routes:chunk-1"
+    },
+    {
+        "text": "x` | Tabs: Upcoming, Hosted, Waiting, Pending, Incoming Challenges, Past, Cancelled |\n| GET | `\/my-events\/host-requests` | `MyEventsController@hostRequests` | Pending join request queue |\n| POST | `\/my-events\/host-requests\/{participant}\/approve` | `MyEventsController@approve` | Host approves join request |\n| POST | `\/my-events\/host-requests\/{participant}\/reject` | `MyEventsController@reject` | Host rejects join request |\n| POST | `\/my-events\/challenges\/{participant}\/accept` | `MyEventsController@acceptChallenge` | Opponent accepts challenge invite |\n| POST | `\/my-events\/challenges\/{participant}\/decline` | `MyEventsController@declineChallenge` | Opponent declines challenge invite |\n\n### Notifications\n| Method | URI | Controller@Method | Notes |\n|---|---|---|---|\n| GET | `\/notifications\/{not",
+        "source": "docs\/routes.md#2-auth-protected-routes:chunk-2"
+    },
+    {
+        "text": "t rejects join request |\n| POST | `\/my-events\/challenges\/{participant}\/accept` | `MyEventsController@acceptChallenge` | Opponent accepts challenge invite |\n| POST | `\/my-events\/challenges\/{participant}\/decline` | `MyEventsController@declineChallenge` | Opponent declines challenge invite |\n\n### Notifications\n| Method | URI | Controller@Method | Notes |\n|---|---|---|---|\n| GET | `\/notifications\/{notification}\/open` | `NotificationController@open` | Mark as read + redirect to `action_url` |\n| POST | `\/notifications\/read-all` | `NotificationController@readAll` | Mark all unread as read |\n\n### Group Chat (per event)\n| Method | URI | Controller@Method |\n|---|---|---|\n| GET | `\/events\/{event}\/chat` | `ChatController@show` |\n| POST | `\/events\/{event}\/chat` | `ChatController@send` |\n| DELETE | `\/ev",
+        "source": "docs\/routes.md#2-auth-protected-routes:chunk-3"
+    },
+    {
+        "text": "ification}\/open` | `NotificationController@open` | Mark as read + redirect to `action_url` |\n| POST | `\/notifications\/read-all` | `NotificationController@readAll` | Mark all unread as read |\n\n### Group Chat (per event)\n| Method | URI | Controller@Method |\n|---|---|---|\n| GET | `\/events\/{event}\/chat` | `ChatController@show` |\n| POST | `\/events\/{event}\/chat` | `ChatController@send` |\n| DELETE | `\/events\/{event}\/chat\/{message}` | `ChatController@destroy` |\n\n### Connections \/ Private Chat\n| Method | URI | Controller@Method |\n|---|---|---|\n| GET | `\/connections` | `ConnectionController@index` |\n| POST | `\/connections` | `ConnectionController@store` |\n| PATCH | `\/connections\/{connection}` | `ConnectionController@update` |\n| GET | `\/connections\/{connection}\/chat` | `ConnectionController@chat` |\n|",
+        "source": "docs\/routes.md#2-auth-protected-routes:chunk-4"
+    },
+    {
+        "text": "ents\/{event}\/chat\/{message}` | `ChatController@destroy` |\n\n### Connections \/ Private Chat\n| Method | URI | Controller@Method |\n|---|---|---|\n| GET | `\/connections` | `ConnectionController@index` |\n| POST | `\/connections` | `ConnectionController@store` |\n| PATCH | `\/connections\/{connection}` | `ConnectionController@update` |\n| GET | `\/connections\/{connection}\/chat` | `ConnectionController@chat` |\n| POST | `\/connections\/{connection}\/chat` | `ConnectionController@sendMessage` |\n\n### Reviews\n| Method | URI | Controller@Method |\n|---|---|---|\n| GET | `\/reviews\/create` | `ReviewController@create` |\n| POST | `\/reviews` | `ReviewController@store` |\n\n### Profile\n| Method | URI | Controller@Method |\n|---|---|---|\n| GET | `\/profile` | `ProfileController@index` |\n| POST | `\/profile` | `ProfileControll",
+        "source": "docs\/routes.md#2-auth-protected-routes:chunk-5"
+    },
+    {
+        "text": " POST | `\/connections\/{connection}\/chat` | `ConnectionController@sendMessage` |\n\n### Reviews\n| Method | URI | Controller@Method |\n|---|---|---|\n| GET | `\/reviews\/create` | `ReviewController@create` |\n| POST | `\/reviews` | `ReviewController@store` |\n\n### Profile\n| Method | URI | Controller@Method |\n|---|---|---|\n| GET | `\/profile` | `ProfileController@index` |\n| POST | `\/profile` | `ProfileController@update` |\n\n### Legacy\n| Method | URI | Controller@Method |\n|---|---|---|\n| GET | `\/field-availability` | `FieldAvailabilityController@index` |\n\n### AI Assistant (RAG Chatbot — June 2026)\n| Method | URI | Controller@Method | Notes |\n|---|---|---|---|\n| GET | `\/chat` | `ChatAssistantController@show` | Full-page chat |\n| GET | `\/chat\/sessions` | `ChatAssistantController@index` | JSON list sidebar ",
+        "source": "docs\/routes.md#2-auth-protected-routes:chunk-6"
+    },
+    {
+        "text": "er@update` |\n\n### Legacy\n| Method | URI | Controller@Method |\n|---|---|---|\n| GET | `\/field-availability` | `FieldAvailabilityController@index` |\n\n### AI Assistant (RAG Chatbot — June 2026)\n| Method | URI | Controller@Method | Notes |\n|---|---|---|---|\n| GET | `\/chat` | `ChatAssistantController@show` | Full-page chat |\n| GET | `\/chat\/sessions` | `ChatAssistantController@index` | JSON list sidebar |\n| POST | `\/chat\/sessions` | `ChatAssistantController@store` | Create session |\n| GET | `\/chat\/sessions\/{session}\/messages` | `ChatAssistantController@messages` | JSON messages |\n| POST | `\/chat\/sessions\/{session}\/messages` | `ChatAssistantController@send` | Send + Gemini reply |\n| DELETE | `\/chat\/sessions\/{session}` | `ChatAssistantController@destroy` | Delete session |\n\n---",
+        "source": "docs\/routes.md#2-auth-protected-routes:chunk-7"
+    },
+    {
+        "text": "|\n| POST | `\/chat\/sessions` | `ChatAssistantController@store` | Create session |\n| GET | `\/chat\/sessions\/{session}\/messages` | `ChatAssistantController@messages` | JSON messages |\n| POST | `\/chat\/sessions\/{session}\/messages` | `ChatAssistantController@send` | Send + Gemini reply |\n| DELETE | `\/chat\/sessions\/{session}` | `ChatAssistantController@destroy` | Delete session |\n\n---",
+        "source": "docs\/routes.md#2-auth-protected-routes:chunk-8"
+    },
+    {
+        "text": "## 3. Filament Admin Panel\n\n| URL | Notes |\n|---|---|\n| `\/admin` | Requires authentication |\n\nAll resources auto-discovered via `discoverResources(in: app_path('Filament\/Resources'))`.",
+        "source": "docs\/routes.md#3-filament-admin-panel"
+    },
+    {
+        "text": "﻿# Seeded Data Reference\n\n> PlayMate â€” Database Seeder Reference\n> Run with: `php artisan db:seed`\n> Last updated: May 2026 (v2 DataSeeder)\n\n---",
+        "source": "docs\/seeded-data.md#seeded-data-reference"
+    },
+    {
+        "text": "## 1. Seeded Entities\n\n| Entity | Count | Notes |\n|---|---|---|\n| Sports | 3 | Tennis (NTRP 1-12, 12 levels), Badminton (8 levels), Padel (7 levels) |\n| Venues | 19 | 10 tennis, 5 badminton, 4 padel â€” all Kota Tangerang Selatan |\n| Users | 35 | 32 Indonesian personas + Erlangga + Angga + Roger Federer (protected) |\n| UserSports | ~47 | Users with 1â€“3 sports + time preferences on primary sport |\n| Events | 19 | All 3 sports, 1â€“14 days ahead, mix of singles\/doubles + public\/private |\n| Connections | 24 | 16 accepted (mutual clusters) + 8 pending |\n| UserReviews | 21 | Connection + event sourced, 3â€“5 star range |\n| Fields (legacy) | 8 | |\n| TimeSlots (legacy) | 88 | |\n\n---",
+        "source": "docs\/seeded-data.md#1-seeded-entities"
+    },
+    {
+        "text": "## 2. Sport Definitions\n\n### Tennis\n- **Scale:** 1â€“12 (NTRP)\n- **Levels:** 1.0 Beginner â†’ 1.5 â†’ 2.0 â†’ 2.5 â†’ 3.0 â†’ 3.5 â†’ 4.0 â†’ 4.5 â†’ 5.0 â†’ 5.5 â†’ 6.0+ â†’ 7.0 Elite\n- **Normalization:** 1â†’1, 6â†’5, 7â†’6, 12â†’10\n\n### Badminton\n- **Scale:** 1â€“8\n- **Levels:** Beginner â†’ Lower Intermediate â†’ Intermediate â†’ Upper Intermediate â†’ Advanced â†’ Competitive â†’ Tournament â†’ Elite\n- **Normalization:** 1â†’1, 4â†’4, 8â†’10\n\n### Padel\n- **Scale:** 1â€“7\n- **Levels:** Beginner â†’ Casual â†’ Improving â†’ Intermediate â†’ Advanced â†’ Competitive â†’ Elite\n- **Normalization:** 1â†’1, 4â†’5, 7â†’10\n\n---",
+        "source": "docs\/seeded-data.md#2-sport-definitions"
+    },
+    {
+        "text": "## 3. Demo Credentials\n\n**âš ï¸ All 35 seeded users share the same password:** `password`\n\nUse any account below with the same password to log in as that user.\n\n---\n\n### 3.1 Primary Demo User\n\n| ID | Name | Email | Password | Primary Sport | Skill | Purpose |\n|---|---|---|---|---|---|---|\n| 1 | Rizky Pratama | `rizky@example.com` | `password` | Tennis | NTRP 3.5 (norm 5) | **Main demo account** â€” login here to see full matchmaking, reveal overlay, and all features |\n\n> **Recommended workflow:** Log in as Rizky â†’ visit `\/matchmaking` â†’ âš”ï¸ Challenger Discovered overlay triggers for Galih Ramadhan (score=0.91, same sport, same level, 1 mutual connection).\n\n---\n\n### 3.2 Core Matchmaking Demo Users\n\nThese users are used to demonstrate the 5-component matchmaking engine.\n\n| ID | Name ",
+        "source": "docs\/seeded-data.md#3-demo-credentials:chunk-0"
+    },
+    {
+        "text": "€” login here to see full matchmaking, reveal overlay, and all features |\n\n> **Recommended workflow:** Log in as Rizky â†’ visit `\/matchmaking` â†’ âš”ï¸ Challenger Discovered overlay triggers for Galih Ramadhan (score=0.91, same sport, same level, 1 mutual connection).\n\n---\n\n### 3.2 Core Matchmaking Demo Users\n\nThese users are used to demonstrate the 5-component matchmaking engine.\n\n| ID | Name | Email | Primary Sport | Norm Skill | vs Rizky | Match Score | Demo Purpose |\n|---|---|---|---|---|---|---|---|\n| 11 | Galih Ramadhan | `galih@example.com` | Tennis | 5 | same level | **0.91** | âš”ï¸ **Reveal overlay trigger** â€” perfect sport\/skill\/time\/distance, 1 mutual connection |\n| 19 | Arif Rahman | `arif@example.com` | Tennis | 7 | +2 levels | 0.85 | Same sport, nearby, active today, c",
+        "source": "docs\/seeded-data.md#3-demo-credentials:chunk-1"
+    },
+    {
+        "text": "| Email | Primary Sport | Norm Skill | vs Rizky | Match Score | Demo Purpose |\n|---|---|---|---|---|---|---|---|\n| 11 | Galih Ramadhan | `galih@example.com` | Tennis | 5 | same level | **0.91** | âš”ï¸ **Reveal overlay trigger** â€” perfect sport\/skill\/time\/distance, 1 mutual connection |\n| 19 | Arif Rahman | `arif@example.com` | Tennis | 7 | +2 levels | 0.85 | Same sport, nearby, active today, connected |\n| 23 | Bagus Pratama | `bagus@example.com` | Tennis | 6 | +1 level | 0.84 | Similar skill (0.95 band), 9.7km away â†’ distance penalty demonstrated |\n| 28 | Wawan Susanto | `wawan@example.com` | Tennis | 7 | +2 levels | 0.84 | Same sport, nearby, active, connected (mutual badge) |\n| 5 | Budi Santoso | `budi@example.com` | Tennis | 5 | same level | 0.83 | Perfect skill match (diff=0 â†’ ",
+        "source": "docs\/seeded-data.md#3-demo-credentials:chunk-2"
+    },
+    {
+        "text": "onnected |\n| 23 | Bagus Pratama | `bagus@example.com` | Tennis | 6 | +1 level | 0.84 | Similar skill (0.95 band), 9.7km away â†’ distance penalty demonstrated |\n| 28 | Wawan Susanto | `wawan@example.com` | Tennis | 7 | +2 levels | 0.84 | Same sport, nearby, active, connected (mutual badge) |\n| 5 | Budi Santoso | `budi@example.com` | Tennis | 5 | same level | 0.83 | Perfect skill match (diff=0 â†’ 1.0), 14.7km away â†’ strong distance penalty |\n| 17 | Surya Darma | `surya@example.com` | Tennis | 6 | +1 level | 0.82 | Similar skill, weekday morning prefs (no overlap with Rizky) |\n| 7 | Fajar Nugroho | `fajar@example.com` | Tennis | 8 | +3 levels | 0.81 | Elite player, very close (1.1km), skill diff=3 â†’ 0.60 band |\n| 9 | Hendra Wijaya | `hendra@example.com` | Tennis | 6 | +1 level | 0.81 | ",
+        "source": "docs\/seeded-data.md#3-demo-credentials:chunk-3"
+    },
+    {
+        "text": "1.0), 14.7km away â†’ strong distance penalty |\n| 17 | Surya Darma | `surya@example.com` | Tennis | 6 | +1 level | 0.82 | Similar skill, weekday morning prefs (no overlap with Rizky) |\n| 7 | Fajar Nugroho | `fajar@example.com` | Tennis | 8 | +3 levels | 0.81 | Elite player, very close (1.1km), skill diff=3 â†’ 0.60 band |\n| 9 | Hendra Wijaya | `hendra@example.com` | Tennis | 6 | +1 level | 0.81 | Perfect tennis skill match, Bekasi (17.8km), padel secondary |\n| 25 | Yusuf Ibrahim | `yusuf@example.com` | Tennis | 8 | +3 levels | 0.81 | Elite tennis + padel, 1.6km away |\n| 3 | Ahmad Fauzi | `ahmad@example.com` | Tennis | 7 | +2 levels | 0.80 | Elite tennis, weekday morning prefs |\n| 33 | Erlangga Rafi | `erlanggarafi38@gmail.com` | Tennis | 4 | -1 level | 0.71 | Creator account (protected) |\n",
+        "source": "docs\/seeded-data.md#3-demo-credentials:chunk-4"
+    },
+    {
+        "text": "Perfect tennis skill match, Bekasi (17.8km), padel secondary |\n| 25 | Yusuf Ibrahim | `yusuf@example.com` | Tennis | 8 | +3 levels | 0.81 | Elite tennis + padel, 1.6km away |\n| 3 | Ahmad Fauzi | `ahmad@example.com` | Tennis | 7 | +2 levels | 0.80 | Elite tennis, weekday morning prefs |\n| 33 | Erlangga Rafi | `erlanggarafi38@gmail.com` | Tennis | 4 | -1 level | 0.71 | Creator account (protected) |\n\n---\n\n### 3.3 Badminton Cluster\n\nBadminton filter for Rizky (login as Rizky â†’ filter by Badminton):\n\n| ID | Name | Email | Primary Sport | Norm Skill | Match Score | Connection State | Demo Purpose |\n|---|---|---|---|---|---|---|---|\n| 2 | Dewi Anggraini | `dewi@example.com` | Badminton | 6 | **0.89** | Connected | Same sport, same level, Wed+Sat evenings, 3 mutual connections |\n| 31 | Annisa Fa",
+        "source": "docs\/seeded-data.md#3-demo-credentials:chunk-5"
+    },
+    {
+        "text": "\n---\n\n### 3.3 Badminton Cluster\n\nBadminton filter for Rizky (login as Rizky â†’ filter by Badminton):\n\n| ID | Name | Email | Primary Sport | Norm Skill | Match Score | Connection State | Demo Purpose |\n|---|---|---|---|---|---|---|---|\n| 2 | Dewi Anggraini | `dewi@example.com` | Badminton | 6 | **0.89** | Connected | Same sport, same level, Wed+Sat evenings, 3 mutual connections |\n| 31 | Annisa Farida | `annisa@example.com` | Badminton | 7 | 0.85 | Connected | Same sport, 1 mutual, weekday evenings |\n| 4 | Sinta Maharani | `sinta@example.com` | Badminton | 5 | 0.84 | Connected (11 mutual) | Same level, weekend mornings, far cluster |\n| 12 | Putri Handayani | `putri@example.com` | Badminton | 5 | 0.83 | Connected (9 mutual) | Same level as Rizky's badminton, nearby |\n| 29 | Hana Sabrina | `",
+        "source": "docs\/seeded-data.md#3-demo-credentials:chunk-6"
+    },
+    {
+        "text": "rida | `annisa@example.com` | Badminton | 7 | 0.85 | Connected | Same sport, 1 mutual, weekday evenings |\n| 4 | Sinta Maharani | `sinta@example.com` | Badminton | 5 | 0.84 | Connected (11 mutual) | Same level, weekend mornings, far cluster |\n| 12 | Putri Handayani | `putri@example.com` | Badminton | 5 | 0.83 | Connected (9 mutual) | Same level as Rizky's badminton, nearby |\n| 29 | Hana Sabrina | `hana@example.com` | Badminton | 6 | 0.82 | Connected | Same level as Dewi's, connected cluster |\n| 8 | Rina Wulandari | `rina@example.com` | Badminton | 6 | â€” | Connected | Same level, same evening slots as Dewi |\n\n---\n\n### 3.4 Event Hosts\n\nUse these accounts to demo event creation, participant management, and host approval flow.\n\n| ID | Name | Email | Sport | Hosted Events | Approval Required |",
+        "source": "docs\/seeded-data.md#3-demo-credentials:chunk-7"
+    },
+    {
+        "text": "hana@example.com` | Badminton | 6 | 0.82 | Connected | Same level as Dewi's, connected cluster |\n| 8 | Rina Wulandari | `rina@example.com` | Badminton | 6 | â€” | Connected | Same level, same evening slots as Dewi |\n\n---\n\n### 3.4 Event Hosts\n\nUse these accounts to demo event creation, participant management, and host approval flow.\n\n| ID | Name | Email | Sport | Hosted Events | Approval Required |\n|---|---|---|---|---|---|\n| 1 | Rizky Pratama | `rizky@example.com` | Tennis | Weekend Tennis Meetup | No |\n| 2 | Dewi Anggraini | `dewi@example.com` | Badminton | Monday Night Badminton | No |\n| 3 | Ahmad Fauzi | `ahmad@example.com` | Padel | Saturday Padel Tournament | No |\n| 5 | Budi Santoso | `budi@example.com` | Tennis | Morning Tennis Practice | No |\n| 10 | Anisa Nurfadilah | `anisa@example",
+        "source": "docs\/seeded-data.md#3-demo-credentials:chunk-8"
+    },
+    {
+        "text": "\n|---|---|---|---|---|---|\n| 1 | Rizky Pratama | `rizky@example.com` | Tennis | Weekend Tennis Meetup | No |\n| 2 | Dewi Anggraini | `dewi@example.com` | Badminton | Monday Night Badminton | No |\n| 3 | Ahmad Fauzi | `ahmad@example.com` | Padel | Saturday Padel Tournament | No |\n| 5 | Budi Santoso | `budi@example.com` | Tennis | Morning Tennis Practice | No |\n| 10 | Anisa Nurfadilah | `anisa@example.com` | Badminton | Weekday Badminton League | **Yes** â†’ demo host approval |\n| 7 | Fajar Nugroho | `fajar@example.com` | Tennis | Elite Tennis Sparring | No |\n| 13 | Dimas Aryo | `dimas@example.com` | Padel | Corporate Padel Challenge | **Yes** (private) |\n| 8 | Rina Wulandari | `rina@example.com` | Badminton | Evening Badminton Social | No |\n| 19 | Arif Rahman | `arif@example.com` | Tennis | F",
+        "source": "docs\/seeded-data.md#3-demo-credentials:chunk-9"
+    },
+    {
+        "text": ".com` | Badminton | Weekday Badminton League | **Yes** â†’ demo host approval |\n| 7 | Fajar Nugroho | `fajar@example.com` | Tennis | Elite Tennis Sparring | No |\n| 13 | Dimas Aryo | `dimas@example.com` | Padel | Corporate Padel Challenge | **Yes** (private) |\n| 8 | Rina Wulandari | `rina@example.com` | Badminton | Evening Badminton Social | No |\n| 19 | Arif Rahman | `arif@example.com` | Tennis | Friday Night Tennis Doubles | No |\n| 4 | Sinta Maharani | `sinta@example.com` | Badminton | Beginner Badminton Session | No |\n| 17 | Surya Darma | `surya@example.com` | Tennis | Saturday Morning Tennis | No |\n| 25 | Yusuf Ibrahim | `yusuf@example.com` | Padel | Weekend Padel Social | No |\n| 29 | Hana Sabrina | `hana@example.com` | Badminton | Advanced Badminton Drill | **Yes** |\n| 33 | Erlangga Raf",
+        "source": "docs\/seeded-data.md#3-demo-credentials:chunk-10"
+    },
+    {
+        "text": "riday Night Tennis Doubles | No |\n| 4 | Sinta Maharani | `sinta@example.com` | Badminton | Beginner Badminton Session | No |\n| 17 | Surya Darma | `surya@example.com` | Tennis | Saturday Morning Tennis | No |\n| 25 | Yusuf Ibrahim | `yusuf@example.com` | Padel | Weekend Padel Social | No |\n| 29 | Hana Sabrina | `hana@example.com` | Badminton | Advanced Badminton Drill | **Yes** |\n| 33 | Erlangga Rafi | `erlanggarafi38@gmail.com` | Tennis | Tennis Coaching Session | No |\n\n---\n\n### 3.5 Edge-Case \/ Far-Distance Users\n\nDemonstrates distance decay `exp(-d\/10)` and activity score variance.\n\n| ID | Name | Email | Primary Sport | Location | Distance from Rizky | Activity Score | Demo Purpose |\n|---|---|---|---|---|---|---|---|\n| 16 | Vina Meilani | `vina@example.com` | Badminton | Bandung (~100km) |",
+        "source": "docs\/seeded-data.md#3-demo-credentials:chunk-11"
+    },
+    {
+        "text": "i | `erlanggarafi38@gmail.com` | Tennis | Tennis Coaching Session | No |\n\n---\n\n### 3.5 Edge-Case \/ Far-Distance Users\n\nDemonstrates distance decay `exp(-d\/10)` and activity score variance.\n\n| ID | Name | Email | Primary Sport | Location | Distance from Rizky | Activity Score | Demo Purpose |\n|---|---|---|---|---|---|---|---|\n| 16 | Vina Meilani | `vina@example.com` | Badminton | Bandung (~100km) | ~100km | 0.68 (â‰¤7d) | Strong distance decay â†’ low overall score |\n| 20 | Nadia Zahra | `nadia@example.com` | Badminton | Surabaya (~700km) | ~700km | 0.5 (â‰¤30d) | Very low distance score â†’ near-zero contribution |\n| 21 | Eko Prasetyo | `eko@example.com` | Padel | Semarang (~450km) | ~450km | 0.75 (â‰¤7d) | Distance decay + padel filter match |\n| 22 | Tika Ardianti | `tika@example.com` | B",
+        "source": "docs\/seeded-data.md#3-demo-credentials:chunk-12"
+    },
+    {
+        "text": " ~100km | 0.68 (â‰¤7d) | Strong distance decay â†’ low overall score |\n| 20 | Nadia Zahra | `nadia@example.com` | Badminton | Surabaya (~700km) | ~700km | 0.5 (â‰¤30d) | Very low distance score â†’ near-zero contribution |\n| 21 | Eko Prasetyo | `eko@example.com` | Padel | Semarang (~450km) | ~450km | 0.75 (â‰¤7d) | Distance decay + padel filter match |\n| 22 | Tika Ardianti | `tika@example.com` | Badminton | Yogyakarta (~550km) | ~550km | 0.5 (â‰¤30d) | Far zone, same level as Dewi |\n| 24 | Sari Dewi | `sari@example.com` | Badminton | Malang (~800km) | ~800km | 0.5 (â‰¤30d) | Maximum distance decay |\n| 14 | Lina Susilowati | `lina@example.com` | Badminton | Bogor (~50km) | ~50km | 0.5 (â‰¤30d) | 25 days inactive â†’ activity score 0.5 |\n\n---\n\n### 3.6 Protected \/ System Accounts\n\nThese accou",
+        "source": "docs\/seeded-data.md#3-demo-credentials:chunk-13"
+    },
+    {
+        "text": "adminton | Yogyakarta (~550km) | ~550km | 0.5 (â‰¤30d) | Far zone, same level as Dewi |\n| 24 | Sari Dewi | `sari@example.com` | Badminton | Malang (~800km) | ~800km | 0.5 (â‰¤30d) | Maximum distance decay |\n| 14 | Lina Susilowati | `lina@example.com` | Badminton | Bogor (~50km) | ~50km | 0.5 (â‰¤30d) | 25 days inactive â†’ activity score 0.5 |\n\n---\n\n### 3.6 Protected \/ System Accounts\n\nThese accounts must not be deleted or overwritten.\n\n| ID | Name | Email | Password | Sport | Skill | Purpose |\n|---|---|---|---|---|---|---|\n| 33 | Erlangga Rafi | `erlanggarafi38@gmail.com` | `password` | Tennis | NTRP 2.5 (norm 4) | Creator account â€” host of \"Tennis Coaching Session\" |\n| 35 | Roger Federer | `rogerfederer@test.com` | `password` | Tennis | NTRP 2.0 (norm 3) | Demo account â€” connected to",
+        "source": "docs\/seeded-data.md#3-demo-credentials:chunk-14"
+    },
+    {
+        "text": "nts must not be deleted or overwritten.\n\n| ID | Name | Email | Password | Sport | Skill | Purpose |\n|---|---|---|---|---|---|---|\n| 33 | Erlangga Rafi | `erlanggarafi38@gmail.com` | `password` | Tennis | NTRP 2.5 (norm 4) | Creator account â€” host of \"Tennis Coaching Session\" |\n| 35 | Roger Federer | `rogerfederer@test.com` | `password` | Tennis | NTRP 2.0 (norm 3) | Demo account â€” connected to Erlangga, top match for Rizky (score=0.83) |\n| 34 | Angga | `erlangga25846@gmail.com` | `password` | â€” | â€” | System account â€” no sports, no coords, preserved as-is |\n\n---\n\n### 3.7 Password Verification\n\nAll users are seeded with `Hash::make('password')` (Laravel's default bcrypt).\n\n---",
+        "source": "docs\/seeded-data.md#3-demo-credentials:chunk-15"
+    },
+    {
+        "text": " Erlangga, top match for Rizky (score=0.83) |\n| 34 | Angga | `erlangga25846@gmail.com` | `password` | â€” | â€” | System account â€” no sports, no coords, preserved as-is |\n\n---\n\n### 3.7 Password Verification\n\nAll users are seeded with `Hash::make('password')` (Laravel's default bcrypt).\n\n---",
+        "source": "docs\/seeded-data.md#3-demo-credentials:chunk-16"
+    },
+    {
+        "text": "## 4. DataSeeder Strategy (v2)\n\nThe `DataSeeder` class (`database\/seeders\/DataSeeder.php`) replaces the old inline seeders.\n\n### Design Goals\n\n- **Realistic user personas** â€” every user has a bio, age range, play style, and realistic skill levels\n- **Time preference diversity** â€” ~60% of users have time prefs (weekend mornings \/ weekday evenings \/ etc.)\n- **Activity score coverage** â€” all 5 tiers represented (â‰¤3d, â‰¤7d, â‰¤30d, â‰¤90d, inactive)\n- **Mutual connection clusters** â€” 16 accepted connections in friend groups (triggers mutual badge on cards)\n- **Challenger Discovered overlay** â€” Galih Ramadhan is top match for Rizky (score=0.91, same sport, skill=1.0, mutual=1 â†’ reveal shown)\n- **Distance decay demonstration** â€” Jakarta vs far-zone users (Bandung, Surabaya, Semarang, Yogya, Malang)\n- **Sport filtering** â€” badminton filter shows Dewi cluster (mutual connections), padel filter shows Yusuf\n\n### Protected Users (never deleted)\n\n| Name | Email | Role |\n|---|---|---|\n| Erlangga Rafi | erlanggarafi38@gmail.com | Creator account |\n| Angga | erlangga25846@gmail.com | Creator account |\n| Roger Federer | rogerfederer@test.com | Demo\/test account |\n\n### Demo Login\n\n**Rizky's profile:** Tennis 6 (norm 5), Badminton 4 (norm 5), no time preferences.\nExpected top match: **Galih Ramadhan** (score=0.91, same sport\/skill level, time overlap, 1 mutual connection â†’ âš”ï¸ Challenger Discovered overlay shown)\n\n---",
+        "source": "docs\/seeded-data.md#4-dataseeder-strategy-v2"
+    },
+    {
+        "text": "## 4. Event Dates\n\nEvents are seeded 1â€“14 days ahead of `Carbon::now()`. The browse page always shows events from `now()->subDays(90)` to `now()->addYear()`, so seeded events are always visible.\n\n---",
+        "source": "docs\/seeded-data.md#4-event-dates"
+    },
+    {
+        "text": "## 5. Connection Network\n\n| Cluster | Members | Connection Type |\n|---|---|---|\n| Rizky cluster | Rizky â†” Arif, Rizky â†” Dewi | accepted |\n| Tennis friend group | Arif â†” Galih, Arif â†” Wawan, Galih â†” Wawan | accepted |\n| Badminton group | Dewi â†” Hana, Dewi â†” Rina, Rina â†” Hana | accepted |\n| Elite tennis | Ahmad â†” Surya, Ahmad â†” Bagus | accepted |\n| Padel cluster | Hendra â†” Yusuf, Yusuf â†” Rico, Fajar â†” Rico | accepted |\n| Far zone | Vina (Bandung) â†” Tika (Yogya) | accepted |\n| Erlanggaâ€“Roger | Roger â†” Erlangga | accepted |\n| Pending | Rizky â†’ Galih, Rizky â†’ Denny, Fajar â†’ Rizky, Roger â†’ Vina | pending |\n\n---",
+        "source": "docs\/seeded-data.md#5-connection-network"
+    },
+    {
+        "text": "## 6. Skill Levels Migration (One-Time)\n\nIf sports were seeded with legacy format, run the Tinker migration once:\n\n**Converts:**\n- `[\"Beginner\",\"Intermediate\",...]` â†’ `[{value:1,name:\"Beginner\"},...]`\n- `[1,2,3,4,5]` â†’ `[{value:1,name:\"Level 1\"},...]`\n- Already-structured data â†’ skipped (idempotent, safe to re-run)\n\n---",
+        "source": "docs\/seeded-data.md#6-skill-levels-migration-one-time"
+    },
+    {
+        "text": "## 9. RAG Knowledge Base (June 2026)\n\nThe AI assistant's knowledge is built from `docs\/*.md` (15 files, ~2200 lines total) and embedded offline by:\n\nOutputs to:\n- `storage\/app\/private\/rag\/chunks.json` â€” chunk metadata (id, source, text, token estimate)\n- `storage\/app\/private\/rag\/embeddings.json` â€” float vector per chunk, indexed by chunk id\n\nBoth files are gitignored (storage\/app\/private\/ is allowlisted only for the folder). Re-run after updating `docs\/`; the command is idempotent.",
+        "source": "docs\/seeded-data.md#9-rag-knowledge-base-june-2026"
+    },
+    {
+        "text": "# Views & Templates\n\n> PlayMate — Blade View Reference\n> Last updated: June 2026\n\n---",
+        "source": "docs\/views.md#views-templates"
+    },
+    {
+        "text": "## 1. Layout\n\n### `layouts\/app.blade.php`\n**Theme:** Pure black `#0D0D0D` background, Oswald font, orange `#F97316` accent, red `#D62B2B` primary button.\n\nRole-aware navigation — **Bowl Series layout (logo center, menu split left\/right):**\n- **Guest:** Sign In (left) · PLAYMATE logo (center) · Join Now ★ CTA (right)\n- **Authenticated:** Dashboard\/Match\/Events (left) · logo (center) · Venues\/Network\/Schedule\/Profile\/Logout (right)\n\n**Leaflet loaded in `<head>`** (not deferred) — before Alpine so `window.L` is available globally:\n\n---",
+        "source": "docs\/views.md#1-layout"
+    },
+    {
+        "text": "## 2. Landing & Auth\n\n| View | Route | Description |\n|---|---|---|\n| `welcome.blade.php` | GET `\/` | Landing: full-screen video hero (\"Find Your Next Match.\"), stats, 3 sport tiles (Tennis\/Padel\/Badminton), How It Works, Upcoming Events (live DB), CTA, full footer |\n| `auth\/login.blade.php` | GET `\/login` | Email + password |\n| `auth\/register.blade.php` | GET `\/register` | Name + email + password + play_style |\n\n---",
+        "source": "docs\/views.md#2-landing-auth"
+    },
+    {
+        "text": "## 3. Dashboard & Matchmaking\n\n| View | Route | Description |\n|---|---|---|\n| `dashboard.blade.php` | GET `\/dashboard` | 4 feature cards |\n| `matchmaking.blade.php` | GET `\/matchmaking` | Top Match popup + scored opponent grid |\n\n**Matchmaking view features:**\n- **Top Match popup** — Alpine.js modal, only fires when `request()->boolean('searched')` is true (not on fresh page load). Score ≥ 0.75 + same sport + ≥2 strong factors or mutual connection\n- Popup design: score ring (96px border box), skill bar 2px, per-component breakdown bars, plain-text badges, no confetti, CSS keyframe animation (`pm-card-in` cubic-bezier 550ms)\n- Score breakdown panel (expandable) per card\n- Per-component score bars: `width: {{ $comp['weight'] > 0 ? round($comp['score'] \/ $comp['weight'] * 100) : 0 }}%`\n- **Badges (plain text, no emoji):** `Same Level`, `Similar Skill`, `Nearby`, `Close`, `In Form`, `Active`, `Schedule Match`\n- Connection state-aware buttons (Chat\/Connect\/Request Pending\/Accept\/Decline)\n- Filter presets (localStorage: `playmate_match_presets`) — **only shown after search**\n- Last active display: `Carbon::diffForHumans()`\n- Criteria match summary (Strong Match \/ Weak Factors boxes)\n- **⚠️ Always use `$sport->getSkillLevels()` not `$sport->skill_levels`**\n\n---",
+        "source": "docs\/views.md#3-dashboard-matchmaking"
+    },
+    {
+        "text": "## 4. Profile\n\n| View | Route | Description |\n|---|---|---|\n| `profile.blade.php` | GET `\/profile` | Avatar upload, all profile fields, sports editor with per-sport time preferences (from\/to + day selector), My Connections section |\n\n**Sports editor:**\n- 3 rows with sport picker + level + style per row\n- New sport rows show all sports grouped in `<optgroup>`\n- `skill_value` auto-filled from `sport->getSkillLevels()` on save\n- **Per-sport time preferences:** time picker (from\/to) + Su–Sa CSS toggle day selector\n- Stores `preferred_start_time`, `preferred_end_time`, `preferred_days` in `user_sports`\n- **⚠️ Uses `$sport->getSkillLevels()` NOT direct property access**\n\n**Map picker usage:**\n\n`addr-id=\"address\"` → matches hidden field name in profile form. `home_address` handled by map picker's hidden field — no separate visible text input needed.\n\n---",
+        "source": "docs\/views.md#4-profile"
+    },
+    {
+        "text": "## 5. Events\n\n| View | Route | Description |\n|---|---|---|\n| `events\/index.blade.php` | GET `\/events` | Event grid with sport + date filter |\n| `events\/create.blade.php` | GET `\/events\/create` | Full dark-theme event form with venue autocomplete + map picker |\n| `events\/show.blade.php` | GET `\/events\/{event}` | Detail + join\/leave\/cancel + participant list + chat button |\n| `my-events.blade.php` | GET `\/my-events` | Tabs: Upcoming \/ Hosted \/ Waiting \/ Pending \/ Past \/ Cancelled. Amber badge with pending request count |\n| `my-events-host-requests.blade.php` | GET `\/my-events\/host-requests` | Pending join request cards: avatar, tags, sports, rating, Approve\/Decline |\n| `chat.blade.php` | GET `\/events\/{event}\/chat` | Event group chat: message bubbles, text\/image\/file input |\n| `host-game.blad",
+        "source": "docs\/views.md#5-events:chunk-0"
+    },
+    {
+        "text": " GET `\/my-events` | Tabs: Upcoming \/ Hosted \/ Waiting \/ Pending \/ Past \/ Cancelled. Amber badge with pending request count |\n| `my-events-host-requests.blade.php` | GET `\/my-events\/host-requests` | Pending join request cards: avatar, tags, sports, rating, Approve\/Decline |\n| `chat.blade.php` | GET `\/events\/{event}\/chat` | Event group chat: message bubbles, text\/image\/file input |\n| `host-game.blade.php` | GET `\/events\/challenge\/{user}` | Dark-theme challenge form. Pre-filled with opponent info, posts to `events.store`. Shows \"DIRECT CHALLENGE\" banner when opponent set. |\n\n**Events\/create — venue + map setup:**\n\n`addr-id=\"map_address\"` avoids clashing with `venue_name` from venue-picker. The two components communicate via `CustomEvent('playmate:venue-selected')` — selecting a venue from aut",
+        "source": "docs\/views.md#5-events:chunk-1"
+    },
+    {
+        "text": "e.php` | GET `\/events\/challenge\/{user}` | Dark-theme challenge form. Pre-filled with opponent info, posts to `events.store`. Shows \"DIRECT CHALLENGE\" banner when opponent set. |\n\n**Events\/create — venue + map setup:**\n\n`addr-id=\"map_address\"` avoids clashing with `venue_name` from venue-picker. The two components communicate via `CustomEvent('playmate:venue-selected')` — selecting a venue from autocomplete pans the map automatically.\n\n**Pre-fill from venue page:** When navigating from `venues\/show.blade.php` via \"Host an Event Here\" (`?venue_id=X`), `EventController::create()` resolves the venue and passes `$venue` to the view. The venue-picker pre-fills name + coordinates, the map pans to the venue, and the sport dropdown auto-selects the venue's sport.\n\n---",
+        "source": "docs\/views.md#5-events:chunk-2"
+    },
+    {
+        "text": "ocomplete pans the map automatically.\n\n**Pre-fill from venue page:** When navigating from `venues\/show.blade.php` via \"Host an Event Here\" (`?venue_id=X`), `EventController::create()` resolves the venue and passes `$venue` to the view. The venue-picker pre-fills name + coordinates, the map pans to the venue, and the sport dropdown auto-selects the venue's sport.\n\n---",
+        "source": "docs\/views.md#5-events:chunk-3"
+    },
+    {
+        "text": "## 6. Venues\n\n**Scope:** Read-only Venue Directory. No booking, no court availability. Data source: scraped from ayo.co.id.\n\n| View | Route | Description |\n|---|---|---|\n| `venues\/index.blade.php` | GET `\/venues` | Filter by sport\/area. Card grid: name, sport, address, hours, price estimate |\n| `venues\/show.blade.php` | GET `\/venues\/{venue}` | Venue info, 3-column info cards, Leaflet dark-tile map (if lat\/lng set), \"Host an Event Here\" CTA |\n\n**`venues\/show.blade.php` map:**\n- Rendered only when `$venue->latitude && $venue->longitude`\n- Tile: `https:\/\/{s}.basemaps.cartocdn.com\/dark_all\/{z}\/{x}\/{y}{r}.png` (no API key)\n- Orange `#F97316` circle marker via `L.divIcon`\n- `scrollWheelZoom: false` to avoid accidental zoom\n- Script in `@push('scripts')` — safe because Leaflet already loaded in `<head>`\n\n**Notice box** on detail page clarifies: directory only, contact venue for booking.\n\n---",
+        "source": "docs\/views.md#6-venues"
+    },
+    {
+        "text": "## 7. Connections & Private Chat\n\n| View | Route | Description |\n|---|---|---|\n| `connections\/index.blade.php` | GET `\/connections` | Tabs: Incoming (Accept\/Decline), Sent (pending), My Connections (Chat\/View\/Review) |\n| `connections\/chat.blade.php` | GET `\/connections\/{connection}\/chat` | Private DM thread: message bubbles, text\/file input, auto-scroll |\n\n---",
+        "source": "docs\/views.md#7-connections-private-chat"
+    },
+    {
+        "text": "## 8. Players \/ Public Profile\n\n| View | Route | Description |\n|---|---|---|\n| `players\/profile.blade.php` | GET `\/players\/{user}` | Public player profile |\n\n**Content:**\n- Gradient header: avatar, name, location, tags, star rating badge\n- 3-column stats: Events Joined \/ Events Hosted \/ Average Rating\n- Smart CTA based on connection state:\n  - No connection → \"Connect\"\n  - Pending sent → ⏳ Pending badge\n  - Pending received → Accept \/ Decline\n  - Accepted → \"Chat\" + \"Connected\" badge + \"Leave Review\"\n- Sports grid with skill bars (`skill_number × 10%` width)\n- Reviews section with rating summary + reviewer cards\n- Recent events list: sport icon, title, date, venue, status badge\n\n---",
+        "source": "docs\/views.md#8-players-public-profile"
+    },
+    {
+        "text": "## 9. Reviews\n\n| View | Route | Description |\n|---|---|---|\n| `reviews\/create.blade.php` | GET `\/reviews\/create` | Interactive 1–5 star rating + comment textarea |\n\n---",
+        "source": "docs\/views.md#9-reviews"
+    },
+    {
+        "text": "## 10. Component: Map Picker\n\n**File:** `resources\/views\/components\/map-picker.blade.php`\n\nUses plain JS `mapPicker()` function (not Alpine inline `x-data`) — Leaflet `L` global accessible from regular `<script>` block.\n\n**Props:**\n\n| Prop | Default | Description |\n|---|---|---|\n| `latId` | `latitude` | Hidden lat field ID + form name |\n| `lngId` | `longitude` | Hidden lng field ID + form name |\n| `addrId` | `address` | Hidden address field ID + form name |\n| `latVal` | `null` | Pre-filled latitude |\n| `lngVal` | `null` | Pre-filled longitude |\n| `addrVal` | `null` | Pre-filled address string |\n| `label` | `Location` | Label text |\n| `height` | `300` | Map height in px |\n| `defaultLat` | `-6.2088` | Fallback: Jakarta |\n| `defaultLng` | `106.8456` | Fallback: Jakarta |\n| `defaultZoom` | `13",
+        "source": "docs\/views.md#10-component-map-picker:chunk-0"
+    },
+    {
+        "text": " `addrId` | `address` | Hidden address field ID + form name |\n| `latVal` | `null` | Pre-filled latitude |\n| `lngVal` | `null` | Pre-filled longitude |\n| `addrVal` | `null` | Pre-filled address string |\n| `label` | `Location` | Label text |\n| `height` | `300` | Map height in px |\n| `defaultLat` | `-6.2088` | Fallback: Jakarta |\n| `defaultLng` | `106.8456` | Fallback: Jakarta |\n| `defaultZoom` | `13` | Initial zoom |\n\n**Features:** Draggable marker, Nominatim address search (Indonesia-focused: `countrycodes=id`), click-to-set, reverse geocoding, \"Use My Location\" button, `map.invalidateSize()` after init.\n\n**Venue-picker integration:** Listens for `window.CustomEvent('playmate:venue-selected', {detail: {lat, lng, name}})`. When received, calls `setPosition(lat, lng, false)` (skipping reverse",
+        "source": "docs\/views.md#10-component-map-picker:chunk-1"
+    },
+    {
+        "text": "` | Initial zoom |\n\n**Features:** Draggable marker, Nominatim address search (Indonesia-focused: `countrycodes=id`), click-to-set, reverse geocoding, \"Use My Location\" button, `map.invalidateSize()` after init.\n\n**Venue-picker integration:** Listens for `window.CustomEvent('playmate:venue-selected', {detail: {lat, lng, name}})`. When received, calls `setPosition(lat, lng, false)` (skipping reverse-geocode) and updates `address`. If map is not yet rendered (Leaflet still loading), stores in `this._pending` and applies after `renderMap()` + `invalidateSize()`.\n\n**`setPosition(lat, lng, reverseGeocode)`:** `reverseGeocode=true` when user clicks\/drags map. `false` when driven by venue-picker or Nominatim search result.\n\n**All coordinates stored in hidden form fields** — never exposed as raw nu",
+        "source": "docs\/views.md#10-component-map-picker:chunk-2"
+    },
+    {
+        "text": "-geocode) and updates `address`. If map is not yet rendered (Leaflet still loading), stores in `this._pending` and applies after `renderMap()` + `invalidateSize()`.\n\n**`setPosition(lat, lng, reverseGeocode)`:** `reverseGeocode=true` when user clicks\/drags map. `false` when driven by venue-picker or Nominatim search result.\n\n**All coordinates stored in hidden form fields** — never exposed as raw numbers.\n\n---",
+        "source": "docs\/views.md#10-component-map-picker:chunk-3"
+    },
+    {
+        "text": "mbers.\n\n---",
+        "source": "docs\/views.md#10-component-map-picker:chunk-4"
+    },
+    {
+        "text": "## 11. Component: Venue Picker\n\n**File:** `resources\/views\/components\/venue-picker.blade.php`\n\nAlpine.js typeahead for selecting a venue from the database. Used in `events\/create.blade.php` and `host-game.blade.php`.\n\n**Props:**\n\n| Prop | Default | Description |\n|---|---|---|\n| `selectedName` | `''` | Pre-filled venue name (e.g. `old('venue_name', $venue?->name)`) |\n| `selectedLat` | `null` | Pre-filled latitude — triggers map pan on page load via `x-init` |\n| `selectedLng` | `null` | Pre-filled longitude — triggers map pan on page load via `x-init` |\n\n**Owns:** `<input type=\"hidden\" name=\"venue_name\">` only. Does **not** own `latitude`\/`longitude` — those belong to map-picker.\n\n**Behavior:**\n- Debounce 250ms → `GET \/venues\/search?q=...` → dropdown (max 8 results)\n- Each result shows sport badge + name + area\/address + pin icon (if coords available)\n- On select: sets `query` = venue name, dispatches `CustomEvent('playmate:venue-selected', {lat, lng, name})` on `window`\n- On manual type: `hasCoords` reset to false; venue_name reflects typed text\n- Clear (✕) button resets query and coords status\n- Confirmation label \"✓ Koordinat tersimpan\" shown when venue with coords selected\n- When `selectedLat`\/`selectedLng` provided, dispatches `playmate:venue-selected` on `x-init` to auto-pan map on page load\n\n---",
+        "source": "docs\/views.md#11-component-venue-picker"
+    },
+    {
+        "text": "## 11. AI Assistant (June 2026)\n\n| View | Route \/ Included from | Description |\n|---|---|---|\n| `chat\/show.blade.php` | GET `\/chat` | Full-page chat: sidebar of sessions + main thread |\n| `partials\/_chatbot-widget.blade.php` | `layouts\/app.blade.php` (auth only) | Thin wrapper — just calls `@include('partials._chatbot-panel')` |\n| `partials\/_chatbot-panel.blade.php` | `_chatbot-widget` + `chat\/show` | Shared markup: floating widget mode OR full-page mode via `$fullPage` flag |\n| `partials\/_chatbot-scripts.blade.php` | `layouts\/app.blade.php` `<head>` | Alpine.js `playmateChat(cfg)` function — session CRUD + send logic |\n\n**`partials\/_chatbot-panel.blade.php`:**\n- Dual-mode: renders as floating bottom-right widget (default) or full-height panel (`$fullPage = true`)\n- Sidebar: session list w",
+        "source": "docs\/views.md#11-ai-assistant-june-2026:chunk-0"
+    },
+    {
+        "text": "w` | Shared markup: floating widget mode OR full-page mode via `$fullPage` flag |\n| `partials\/_chatbot-scripts.blade.php` | `layouts\/app.blade.php` `<head>` | Alpine.js `playmateChat(cfg)` function — session CRUD + send logic |\n\n**`partials\/_chatbot-panel.blade.php`:**\n- Dual-mode: renders as floating bottom-right widget (default) or full-height panel (`$fullPage = true`)\n- Sidebar: session list with \"Untitled\" fallback, delete button per session\n- Thread: message bubbles (user = orange, assistant = dark), \"typing...\" indicator\n- Input: text field + SEND button, error banner below\n- All UI text in English\n\n**`partials\/_chatbot-scripts.blade.php`:**\n- `playmateChat(cfg)` Alpine component function\n- `cfg.baseUrl` = `\/chat\/sessions` — all endpoints built via template literal: `${cfg.baseUrl}\/",
+        "source": "docs\/views.md#11-ai-assistant-june-2026:chunk-1"
+    },
+    {
+        "text": "ith \"Untitled\" fallback, delete button per session\n- Thread: message bubbles (user = orange, assistant = dark), \"typing...\" indicator\n- Input: text field + SEND button, error banner below\n- All UI text in English\n\n**`partials\/_chatbot-scripts.blade.php`:**\n- `playmateChat(cfg)` Alpine component function\n- `cfg.baseUrl` = `\/chat\/sessions` — all endpoints built via template literal: `${cfg.baseUrl}\/${id}\/messages`\n- `newSession()`, `loadSession(id)`, `deleteSession(id)`, `send()`\n\n**`chat\/show.blade.php`:**\n- Two-column layout: session list (left) + thread (right)\n- Sets `$fullPage = true` → panel fills container, no floating button\n- Markdown-ish: assistant replies render with `whitespace-pre-wrap` (no Markdown lib in v1).",
+        "source": "docs\/views.md#11-ai-assistant-june-2026:chunk-2"
+    },
+    {
+        "text": "${id}\/messages`\n- `newSession()`, `loadSession(id)`, `deleteSession(id)`, `send()`\n\n**`chat\/show.blade.php`:**\n- Two-column layout: session list (left) + thread (right)\n- Sets `$fullPage = true` → panel fills container, no floating button\n- Markdown-ish: assistant replies render with `whitespace-pre-wrap` (no Markdown lib in v1).",
+        "source": "docs\/views.md#11-ai-assistant-june-2026:chunk-3"
+    }
+]
