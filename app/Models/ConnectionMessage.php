@@ -14,7 +14,9 @@ class ConnectionMessage extends Model
     protected function casts(): array
     {
         return [
-            'created_at' => 'datetime',
+            'connection_id' => 'integer',
+            'sender_id'     => 'integer',
+            'created_at'    => 'datetime',
         ];
     }
 

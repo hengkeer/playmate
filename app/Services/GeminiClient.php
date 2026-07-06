@@ -57,17 +57,17 @@ class GeminiClient
 
         foreach ($history as $turn) {
             $role = $turn['role'] === 'user' ? 'user' : 'model';
-            $contents[] = ['role' => $role, 'parts' => [['text' => $turn['content']]]];
+            $contents[] = ['role' => $role, 'parts' => [['text' => $this->ensureUtf8($turn['content'])]]];
         }
 
         $userText = $context
             ? "CONTEXT (dokumentasi PlayMate):\n{$context}\n\n---\n\nPERTANYAAN USER:\n{$userMessage}"
             : $userMessage;
 
-        $contents[] = ['role' => 'user', 'parts' => [['text' => $userText]]];
+        $contents[] = ['role' => 'user', 'parts' => [['text' => $this->ensureUtf8($userText)]]];
 
         $body = [
-            'systemInstruction' => ['parts' => [['text' => $systemPrompt]]],
+            'systemInstruction' => ['parts' => [['text' => $this->ensureUtf8($systemPrompt)]]],
             'contents'          => $contents,
             'generationConfig'  => [
                 'temperature'     => 0.4,

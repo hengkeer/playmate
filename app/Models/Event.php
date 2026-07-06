@@ -21,6 +21,8 @@ class Event extends Model
     protected function casts(): array
     {
         return [
+            'host_id'           => 'integer',
+            'sport_id'          => 'integer',
             'start_time'        => 'datetime',
             'end_time'          => 'datetime',
             'latitude'          => 'float',

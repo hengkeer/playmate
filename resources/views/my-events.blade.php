@@ -123,7 +123,13 @@
         </div>
         <div class="grid gap-px sm:grid-cols-2 xl:grid-cols-3" style="background:rgb(var(--bg-base))">
             @foreach($incomingChallenges as $event)
-                @php $participant = $event->participants->firstWhere('user_id', auth()->id()); @endphp
+                @php 
+                    $participant = $event->participants
+                        ->where('user_id', auth()->id())
+                        ->where('status', 'pending')
+                        ->where('is_invite', true)
+                        ->first(); 
+                @endphp
                 <div class="bg-ink-900 flex flex-col border border-brand-red/30">
                     @include('events.partials.event-card', ['event' => $event])
                     <div class="flex gap-px" style="background:rgb(var(--bg-base))">

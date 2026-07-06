@@ -14,6 +14,8 @@ class EventMessage extends Model
     protected function casts(): array
     {
         return [
+            'event_id'   => 'integer',
+            'user_id'    => 'integer',
             'created_at' => 'datetime',
         ];
     }

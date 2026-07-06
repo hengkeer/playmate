@@ -10,6 +10,13 @@ class ChatSession extends Model
 {
     protected $fillable = ['user_id', 'title'];
 
+    protected function casts(): array
+    {
+        return [
+            'user_id' => 'integer',
+        ];
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

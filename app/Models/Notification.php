@@ -13,6 +13,7 @@ class Notification extends Model
     protected function casts(): array
     {
         return [
+            'user_id' => 'integer',
             'read_at' => 'datetime',
         ];
     }

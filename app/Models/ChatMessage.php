@@ -9,6 +9,14 @@ class ChatMessage extends Model
 {
     protected $fillable = ['session_id', 'role', 'content', 'tokens_used'];
 
+    protected function casts(): array
+    {
+        return [
+            'session_id'  => 'integer',
+            'tokens_used' => 'integer',
+        ];
+    }
+
     public function session(): BelongsTo
     {
         return $this->belongsTo(ChatSession::class, 'session_id');

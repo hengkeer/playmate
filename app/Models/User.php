@@ -172,7 +172,7 @@ class User extends Authenticatable implements FilamentUser
 
     public function avatarInitial(): string
     {
-        return strtoupper(substr($this->name, 0, 1));
+        return strtoupper(mb_substr($this->name, 0, 1, 'UTF-8'));
     }
 
     public function isAdmin(): bool

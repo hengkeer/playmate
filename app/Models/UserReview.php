@@ -14,7 +14,10 @@ class UserReview extends Model
     protected function casts(): array
     {
         return [
-            'rating' => 'integer',
+            'reviewer_id'      => 'integer',
+            'reviewed_user_id' => 'integer',
+            'source_id'        => 'integer',
+            'rating'           => 'integer',
         ];
     }
 

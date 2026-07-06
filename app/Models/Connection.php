@@ -10,6 +10,14 @@ class Connection extends Model
 {
     protected $fillable = ['requester_id', 'receiver_id', 'status'];
 
+    protected function casts(): array
+    {
+        return [
+            'requester_id' => 'integer',
+            'receiver_id'  => 'integer',
+        ];
+    }
+
     public function requester(): BelongsTo
     {
         return $this->belongsTo(User::class, 'requester_id');

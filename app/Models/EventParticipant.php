@@ -12,6 +12,8 @@ class EventParticipant extends Model
     protected function casts(): array
     {
         return [
+            'event_id'   => 'integer',
+            'user_id'    => 'integer',
             'joined_at'  => 'datetime',
             'slot_number' => 'integer',
             'is_invite'  => 'boolean',

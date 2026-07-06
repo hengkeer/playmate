@@ -106,15 +106,16 @@ class BuildRagIndex extends Command
 
             $text = $heading === '' ? $body : "{$heading}\n\n{$body}";
 
-            if (strlen($text) <= 1500) {
+            if (mb_strlen($text, 'UTF-8') <= 1500) {
                 $chunks[] = ['text' => $text, 'source' => $sourceBase];
             } else {
                 $window = 800;
                 $stride = 400;
                 $offset = 0;
                 $idx = 0;
-                while ($offset < strlen($text)) {
-                    $piece = substr($text, $offset, $window);
+                $len = mb_strlen($text, 'UTF-8');
+                while ($offset < $len) {
+                    $piece = mb_substr($text, $offset, $window, 'UTF-8');
                     $chunks[] = ['text' => $piece, 'source' => "{$sourceBase}:chunk-{$idx}"];
                     $offset += $stride;
                     $idx++;
