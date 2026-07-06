@@ -15,7 +15,7 @@ class Event extends Model
         'start_time', 'end_time',
         'max_slots', 'price', 'payment_info',
         'visibility', 'match_type',
-        'approval_required', 'status',
+        'approval_required', 'status', 'is_challenge',
     ];
 
     protected function casts(): array
@@ -30,6 +30,7 @@ class Event extends Model
             'max_slots'         => 'integer',
             'price'             => 'float',
             'approval_required' => 'boolean',
+            'is_challenge'      => 'boolean',
         ];
     }
 

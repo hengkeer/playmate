@@ -18,7 +18,8 @@ class EventController extends Controller
 
         $query = Event::with(['sport', 'host', 'users'])
             ->where('status', '!=', 'cancelled')
-            ->where('start_time', '>=', now());
+            ->where('start_time', '>=', now())
+            ->where('is_challenge', false);
 
         if ($sportId) {
             $query->where('sport_id', $sportId);
@@ -75,6 +76,8 @@ class EventController extends Controller
             'approval_required' => 'boolean',
         ]);
 
+        $isChallenge = $request->filled('opponent_id');
+
         $event = Event::create([
             'host_id'           => Auth::id(),
             'sport_id'          => $validated['sport_id'] ?? null,
@@ -88,10 +91,11 @@ class EventController extends Controller
             'max_slots'         => $validated['max_slots'] ?? 4,
             'price'             => $validated['price'] ?? null,
             'payment_info'      => $validated['payment_info'] ?? null,
-            'visibility'         => $validated['visibility'] ?? 'public',
-            'match_type'         => $validated['match_type'] ?? 'singles',
+            'visibility'        => $isChallenge ? 'private' : ($validated['visibility'] ?? 'public'),
+            'match_type'        => $validated['match_type'] ?? 'singles',
             'approval_required' => $validated['approval_required'] ?? false,
             'status'            => 'upcoming',
+            'is_challenge'      => $isChallenge,
         ]);
 
         EventParticipant::create([

@@ -205,9 +205,13 @@ class MyEventsController extends Controller
             'user_id'    => $event->host_id,
             'type'       => 'challenge_declined',
             'title'      => $user->name . ' declined your challenge',
-            'body'       => $event->title,
+            'body'       => $event->title . ($event->is_challenge ? ' (Event cancelled)' : ''),
             'action_url' => route('my-events'),
         ]);
+
+        if ($event->is_challenge) {
+            $event->delete();
+        }
 
         return redirect()->route('my-events')->with('success', 'Challenge declined.');
     }

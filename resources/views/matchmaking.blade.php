@@ -581,6 +581,10 @@
 
                     {{-- Action buttons --}}
                     <div class="mt-auto pt-4 flex flex-col gap-px" style="background:rgb(var(--bg-base))">
+                        <a href="{{ route('events.challenge', $opp) }}" class="bg-[#D62B2B] text-white text-center py-3 font-display text-[0.7rem] tracking-widest uppercase hover:bg-accent hover:text-ink-900 transition">
+                            CHALLENGE
+                        </a>
+
                         @php
                             $conn = $connectionStates[$opp->id] ?? null;
                         @endphp
