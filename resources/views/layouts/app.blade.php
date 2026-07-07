@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'PlayMate')</title>
-    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}?v={{ time() }}">
-    <link rel="shortcut icon" type="image/png" href="{{ asset('favicon.png') }}?v={{ time() }}">
+    <link rel="icon" type="image/png" href="{{ asset('storage/favicon.png') }}?v={{ time() }}">
+    <link rel="shortcut icon" type="image/png" href="{{ asset('storage/favicon.png') }}?v={{ time() }}">
     @include('partials._theme-init-script')
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -356,14 +356,7 @@
                     <p class="font-display text-white/30" style="font-size:0.62rem;letter-spacing:0.2em;text-transform:uppercase">&copy; {{ date('Y') }} THE PLAYMATE SERIES. All rights reserved.</p>
                     <div class="flex items-center gap-4">
                         <a href="#" class="font-display text-white/30 hover:text-[#F97316] transition" style="font-size:0.62rem;letter-spacing:0.15em;text-transform:uppercase">Terms &amp; Conditions</a>
-                        <div class="flex gap-2">
-                            <a href="#" class="flex items-center justify-center text-white/40 hover:text-[#F97316] transition" style="width:28px;height:28px;border:1px solid rgb(var(--fg) / 0.15)">
-                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                            </a>
-                            <a href="#" class="flex items-center justify-center text-white/40 hover:text-[#F97316] transition" style="width:28px;height:28px;border:1px solid rgb(var(--fg) / 0.15)">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.5" fill="currentColor"/></svg>
-                            </a>
-                        </div>
+                        <!-- Social icons removed per user request -->
                     </div>
                 </div>
             </div>

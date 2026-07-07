@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PlayMate Sports Club</title>
+    <link rel="icon" type="image/png" href="{{ asset('storage/favicon.png') }}?v={{ time() }}">
+    <link rel="shortcut icon" type="image/png" href="{{ asset('storage/favicon.png') }}?v={{ time() }}">
     @include('partials._theme-init-script')
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -156,35 +158,58 @@
 @include('partials._animejs-head')
 
 {{-- ═══════════════════════ NAV ═══════════════════════ --}}
-<header class="bs-nav sticky top-0 z-50">
-    <div class="max-w-screen-xl mx-auto px-6 lg:px-12">
-        <div class="flex items-center justify-between gap-8" style="height:68px">
+<header class="bs-nav sticky top-0 z-50" x-data="{ mobileMenuOpen: false }">
+    <div class="max-w-screen-xl mx-auto px-6 lg:px-12 relative">
+        <div class="flex items-center justify-between" style="height:68px">
 
-            {{-- Left --}}
-            <nav class="hidden md:flex items-center gap-8">
-                <a href="{{ route('events.index') }}" class="bs-nav-link">Events</a>
-                <a href="{{ route('venues.index') }}" class="bs-nav-link">Venues</a>
-            </nav>
+            {{-- Left nav & Mobile Toggle --}}
+            <div class="flex items-center flex-1 justify-start">
+                <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden text-white/70 hover:text-white mr-4">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+                <nav class="hidden md:flex items-center gap-8">
+                    <a href="{{ route('events.index') }}" class="bs-nav-link">Events</a>
+                    <a href="{{ route('venues.index') }}" class="bs-nav-link">Venues</a>
+                </nav>
+            </div>
 
             {{-- Logo center --}}
-            <a href="{{ route('home') }}" class="flex flex-col items-center leading-none group mx-auto md:mx-0">
-                <span class="font-display text-white group-hover:text-[#F97316] transition" style="font-size:1.5rem;font-weight:700;letter-spacing:0.08em">PLAYMATE</span>
-                <span class="font-display text-white/35" style="font-size:0.5rem;letter-spacing:0.45em;text-transform:uppercase">SPORTS CLUB</span>
-            </a>
+            <div class="absolute left-1/2 transform -translate-x-1/2 flex justify-center">
+                <a href="{{ route('home') }}" class="flex flex-col items-center leading-none group">
+                    <span class="font-display text-white group-hover:text-[#F97316] transition" style="font-size:1.5rem;font-weight:700;letter-spacing:0.08em">PLAYMATE</span>
+                    <span class="font-display text-white/35" style="font-size:0.5rem;letter-spacing:0.45em;text-transform:uppercase">SPORTS CLUB</span>
+                </a>
+            </div>
 
             {{-- Right --}}
-            <div class="flex items-center gap-5">
+            <div class="flex items-center gap-5 flex-1 justify-end">
                 @include('partials._theme-toggle')
                 @auth
                     <a href="{{ route('dashboard') }}" class="hidden md:block bs-nav-link">Dashboard</a>
-                    <form method="POST" action="{{ route('logout') }}">@csrf
+                    <form method="POST" action="{{ route('logout') }}" class="hidden md:block">@csrf
                         <button type="submit" class="bs-nav-link bg-transparent border-0 cursor-pointer">Logout</button>
                     </form>
                 @else
                     <a href="{{ route('login') }}" class="hidden md:block bs-nav-link">Sign In</a>
-                    <a href="{{ route('register') }}" class="bs-cta-btn">Join The Club ★</a>
+                    <a href="{{ route('register') }}" class="hidden md:block bs-cta-btn">Join The Club</a>
                 @endauth
             </div>
+        </div>
+
+        {{-- Mobile Menu --}}
+        <div x-show="mobileMenuOpen" x-transition x-cloak class="md:hidden absolute top-full left-0 w-full shadow-2xl py-4 px-6 flex flex-col gap-4" style="background:rgb(var(--bg-base) / 0.98); border-bottom:1px solid rgb(var(--border-base)); backdrop-filter:blur(8px)">
+            <a href="{{ route('events.index') }}" class="font-display text-sm tracking-widest text-white/80 uppercase">Events</a>
+            <a href="{{ route('venues.index') }}" class="font-display text-sm tracking-widest text-white/80 uppercase">Venues</a>
+            <hr class="border-white/10 my-2">
+            @auth
+            <a href="{{ route('dashboard') }}" class="font-display text-sm tracking-widest text-white/80 uppercase">Dashboard</a>
+            <form method="POST" action="{{ route('logout') }}">@csrf
+                <button type="submit" class="font-display text-sm tracking-widest text-[#D62B2B] uppercase">Logout</button>
+            </form>
+            @else
+            <a href="{{ route('login') }}" class="font-display text-sm tracking-widest text-white/80 uppercase">Sign In</a>
+            <a href="{{ route('register') }}" class="font-display text-sm tracking-widest text-[#F97316] uppercase">Join The Club</a>
+            @endauth
         </div>
     </div>
 </header>
@@ -470,14 +495,7 @@
                 <p class="font-display text-white/30" style="font-size:0.62rem;letter-spacing:0.2em;text-transform:uppercase">&copy; {{ date('Y') }} PLAYMATE SPORTS CLUB</p>
                 <div class="flex items-center gap-4">
                     <p class="font-display text-white/30" style="font-size:0.62rem;letter-spacing:0.2em;text-transform:uppercase">BUILT FOR THE GAME</p>
-                    <div class="flex gap-2">
-                        <a href="#" class="flex items-center justify-center text-white/30 hover:text-[#F97316] transition" style="width:28px;height:28px;border:1px solid rgb(var(--fg) / 0.12)">
-                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                        </a>
-                        <a href="#" class="flex items-center justify-center text-white/30 hover:text-[#F97316] transition" style="width:28px;height:28px;border:1px solid rgb(var(--fg) / 0.12)">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.5" fill="currentColor"/></svg>
-                        </a>
-                    </div>
+                        <!-- Social icons removed -->
                 </div>
             </div>
         </div>
