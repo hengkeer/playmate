@@ -73,7 +73,7 @@
                         @endif
                     @endif
 
-                    <div class="max-w-xs lg:max-w-md space-y-1">
+                    <div class="max-w-[75%] lg:max-w-md space-y-1">
                         {{-- Sender name (others only) --}}
                         @if(!$isMine)
                             <p class="font-display text-[0.58rem] tracking-widest text-white/35 uppercase px-1">

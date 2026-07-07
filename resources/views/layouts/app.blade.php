@@ -279,16 +279,37 @@
                 <a href="{{ route('connections.index') }}" class="font-display text-sm tracking-widest {{ request()->routeIs('connections.*') ? 'text-[#F97316]' : 'text-white/80' }} uppercase">Network</a>
                 <a href="{{ route('my-events') }}" class="font-display text-sm tracking-widest {{ request()->routeIs('my-events*') ? 'text-[#F97316]' : 'text-white/80' }} uppercase">Schedule</a>
                 <hr class="border-white/10 my-2">
-                <a href="{{ route('profile.index') }}" class="font-display text-sm tracking-widest text-white/80 uppercase">Profile</a>
-                <form method="POST" action="{{ route('logout') }}">@csrf
-                    <button type="submit" class="font-display text-sm tracking-widest text-brand-red uppercase">Logout</button>
-                </form>
+                    <a href="{{ route('dashboard') }}" class="font-display text-[0.65rem] tracking-[0.2em] text-white/60 hover:text-white uppercase transition-colors duration-300">Dashboard</a>
+                    <form method="POST" action="{{ route('logout') }}" class="m-0 p-0 inline-flex">
+                        @csrf
+                        <button type="submit" class="font-display text-[0.65rem] tracking-[0.2em] text-[#D62B2B] hover:text-red-400 uppercase transition-colors duration-300">Logout</button>
+                    </form>
                 @else
-                <a href="{{ route('events.index') }}" class="font-display text-sm tracking-widest text-white/80 uppercase">Events</a>
-                <a href="{{ route('venues.index') }}" class="font-display text-sm tracking-widest text-white/80 uppercase">Venues</a>
-                <hr class="border-white/10 my-2">
-                <a href="{{ route('login') }}" class="font-display text-sm tracking-widest text-white/80 uppercase">Sign In</a>
-                <a href="{{ route('register') }}" class="font-display text-sm tracking-widest text-[#F97316] uppercase">Join Now</a>
+                    <a href="{{ route('login') }}" class="font-display text-[0.65rem] tracking-[0.2em] text-white/60 hover:text-white uppercase transition-colors duration-300">Sign In</a>
+                    <a href="{{ route('register') }}" class="font-display text-[0.65rem] tracking-[0.2em] text-[#F97316] hover:text-orange-400 uppercase transition-colors duration-300">Join The Club</a>
+                @endauth
+            </div>
+
+            {{-- Mobile Menu Button --}}
+            <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden text-white/80 p-2 ml-auto shrink-0 w-10 flex justify-end">
+                <svg x-show="!mobileMenuOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                <svg x-cloak x-show="mobileMenuOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+
+        {{-- Mobile Menu --}}
+        <div x-show="mobileMenuOpen" x-transition x-cloak class="md:hidden absolute top-full left-0 w-full shadow-2xl py-4 px-6 flex flex-col gap-4" style="background:rgb(var(--bg-base) / 0.98); border-bottom:1px solid rgb(var(--border-base)); backdrop-filter:blur(8px)">
+            <a href="{{ route('events.index') }}" class="font-display text-sm tracking-widest text-white/80 uppercase">Events</a>
+            <a href="{{ route('venues.index') }}" class="font-display text-sm tracking-widest text-white/80 uppercase">Venues</a>
+            <hr class="border-white/10 my-2">
+            @auth
+            <a href="{{ route('dashboard') }}" class="font-display text-sm tracking-widest text-white/80 uppercase">Dashboard</a>
+            <form method="POST" action="{{ route('logout') }}">@csrf
+                <button type="submit" class="font-display text-sm tracking-widest text-[#D62B2B] uppercase">Logout</button>
+            </form>
+            @else
+            <a href="{{ route('login') }}" class="font-display text-sm tracking-widest text-white/80 uppercase">Sign In</a>
+            <a href="{{ route('register') }}" class="font-display text-sm tracking-widest text-[#F97316] uppercase">Join The Club</a>Now</a>
                 @endauth
             </div>
         </div>

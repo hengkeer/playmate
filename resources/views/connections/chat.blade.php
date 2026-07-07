@@ -60,7 +60,7 @@
                     @endif
                 @endif
 
-                <div class="max-w-xs lg:max-w-md space-y-1">
+                <div class="max-w-[75%] lg:max-w-md space-y-1">
                     {{-- Bubble --}}
                     <div class="{{ $isMine ? 'ml-auto' : '' }}"
                          style="{{ $isMine

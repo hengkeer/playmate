@@ -10,13 +10,13 @@
     ========================================================= --}}
     <section class="pm-anim-load border border-white/10 bg-ink-800/40">
         <div class="grid lg:grid-cols-12 gap-0">
-            <div class="lg:col-span-8 p-10 lg:p-14 border-r border-white/10">
+            <div class="lg:col-span-8 p-6 lg:p-14 border-b lg:border-b-0 lg:border-r border-white/10">
                 <span class="pm-tag" data-animate="fade-down">Smart Matchmaking</span>
                 <p class="font-display text-xs tracking-widest text-white/40 mt-6" data-animate="fade-up">SYSTEM ACTIVE</p>
                 <h1 class="font-display text-4xl md:text-5xl uppercase mt-2" data-animate="fade-up">Find Your<br><span class="text-accent">Ideal Opponent</span></h1>
                 <p class="text-white/60 mt-6 max-w-xl leading-relaxed" data-animate="fade-up">Precision-based player matching using sport type, skill proximity, availability, location radius, and activity signals.</p>
             </div>
-            <div class="lg:col-span-4 p-10 lg:p-14 bg-accent/5" data-animate="fade-left">
+            <div class="lg:col-span-4 p-6 lg:p-14 bg-accent/5" data-animate="fade-left">
                 <p class="pm-section-title">Match Score Legend</p>
                 <div class="space-y-3 mt-6 font-display text-xs tracking-widest">
                     <div class="flex items-center justify-between">
@@ -46,7 +46,7 @@
     {{-- =========================================================
         FILTER PANEL
     ========================================================= --}}
-    <section class="border border-white/10 bg-ink-800/30 p-8 lg:p-10" data-animate="fade-up">
+    <section class="border border-white/10 bg-ink-800/30 p-5 sm:p-8 lg:p-10" data-animate="fade-up">
 
         @php
             $activeFilterCount = collect($filters)
@@ -232,10 +232,10 @@
         <div class="pm-reveal-backdrop absolute inset-0" :class="{ 'pm-leaving': leaving }" style="background:rgba(0,0,0,0.88);backdrop-filter:blur(5px)" @click="close()"></div>
 
         {{-- Modal --}}
-        <div class="pm-reveal-card relative z-10 w-full" :class="{ 'pm-leaving': leaving }" style="max-width:520px">
+        <div class="pm-reveal-card relative z-10 w-full max-h-[90vh] overflow-y-auto" :class="{ 'pm-leaving': leaving }" style="max-width:520px">
 
             {{-- Outer border accent --}}
-            <div style="border:1px solid rgba(249,115,22,0.35);background:rgb(var(--bg-surface));overflow:hidden">
+            <div style="border:1px solid rgba(249,115,22,0.35);background:rgb(var(--bg-surface));overflow:hidden;min-height:min-content">
 
                 {{-- Top accent line --}}
                 <div style="height:2px;background:#F97316;width:100%"></div>

@@ -222,46 +222,46 @@
         <source src="{{ asset('storage/background.mp4') }}" type="video/mp4">
     </video>
     <div class="bs-hero-overlay"></div>
-    <div class="bs-hero-content w-full flex flex-col items-center justify-center text-center px-6" style="min-height:92vh;padding-top:4rem;padding-bottom:4rem">
+    <div class="bs-hero-content w-full flex flex-col items-center justify-center text-center px-6 py-16 md:py-32" style="min-height:92vh;">
         <span class="bs-label mb-6" data-animate="fade-down">EST. 2026 — RACQUET &amp; COURT CLUB</span>
-        <h1 class="font-display text-white uppercase mb-6" style="font-size:clamp(4.5rem,13vw,11rem);font-weight:700;line-height:0.9;letter-spacing:0.01em" data-animate="fade-up">
+        <h1 class="font-display text-white uppercase mb-6" style="font-size:clamp(3.5rem,13vw,11rem);font-weight:700;line-height:0.9;letter-spacing:0.01em" data-animate="fade-up">
             Find Your<br>
             <span style="color:#F97316">Next Match.</span>
         </h1>
-        <p class="text-white/60 max-w-2xl mb-10 leading-relaxed" style="font-size:1.05rem" data-animate="fade-up">
+        <p class="text-white/60 max-w-2xl mb-10 leading-relaxed px-4" style="font-size:clamp(0.9rem,3vw,1.05rem)" data-animate="fade-up">
             A curated sports club for serious players. Connect with opponents who match your level, book premium courts, and build a network that plays as hard as you do.
         </p>
-        <div class="flex flex-col sm:flex-row gap-4 justify-center mb-14" data-animate="fade-up">
+        <div class="flex flex-col sm:flex-row gap-4 justify-center mb-14 w-full sm:w-auto px-4" data-animate="fade-up">
             @guest
-                <a href="{{ route('register') }}" class="bs-btn-primary">Become a Member</a>
-                <a href="{{ route('events.index') }}" class="bs-btn-outline">Browse Events</a>
+                <a href="{{ route('register') }}" class="bs-btn-primary w-full sm:w-auto text-center">Become a Member</a>
+                <a href="{{ route('events.index') }}" class="bs-btn-outline w-full sm:w-auto text-center">Browse Events</a>
             @else
-                <a href="{{ route('dashboard') }}" class="bs-btn-primary">Enter Dashboard</a>
-                <a href="{{ route('matchmaking') }}" class="bs-btn-outline">Find A Match</a>
+                <a href="{{ route('dashboard') }}" class="bs-btn-primary w-full sm:w-auto text-center">Enter Dashboard</a>
+                <a href="{{ route('matchmaking') }}" class="bs-btn-outline w-full sm:w-auto text-center">Find A Match</a>
             @endguest
         </div>
 
         {{-- Active Roster stats bar --}}
-        <div class="w-full max-w-lg" data-animate="fade-up">
-            <div style="border:1px solid rgb(var(--fg) / 0.12);padding:1.75rem 2rem;background:rgba(0,0,0,0.5);backdrop-filter:blur(6px)">
+        <div class="w-full max-w-lg px-4" data-animate="fade-up">
+            <div class="p-5 md:p-7 bg-black/50 backdrop-blur-md border border-white/10">
                 <p class="bs-label mb-4">Active Roster</p>
                 @php
                     $memberCount = \App\Models\User::count();
                     $sportCount = \App\Models\Sport::count();
                     $venueCount = \App\Models\Venue::count();
                 @endphp
-                <div class="grid grid-cols-3 gap-6">
+                <div class="grid grid-cols-3 gap-3 sm:gap-6">
                     <div class="text-center">
-                        <p class="font-display text-white" style="font-size:3rem;font-weight:700;line-height:1" data-counter="{{ $memberCount }}">{{ sprintf('%02d', $memberCount) }}</p>
-                        <p class="font-display text-white/40 mt-1" style="font-size:0.58rem;letter-spacing:0.3em;text-transform:uppercase">Members</p>
+                        <p class="font-display text-white text-3xl sm:text-5xl font-bold leading-none" data-counter="{{ $memberCount }}">{{ sprintf('%02d', $memberCount) }}</p>
+                        <p class="font-display text-white/40 mt-1 sm:mt-2 text-[0.45rem] sm:text-[0.58rem] tracking-[0.2em] sm:tracking-[0.3em] uppercase">Members</p>
                     </div>
                     <div class="text-center">
-                        <p class="font-display text-white" style="font-size:3rem;font-weight:700;line-height:1" data-counter="{{ $sportCount }}">{{ sprintf('%02d', $sportCount) }}</p>
-                        <p class="font-display text-white/40 mt-1" style="font-size:0.58rem;letter-spacing:0.3em;text-transform:uppercase">Sports</p>
+                        <p class="font-display text-white text-3xl sm:text-5xl font-bold leading-none" data-counter="{{ $sportCount }}">{{ sprintf('%02d', $sportCount) }}</p>
+                        <p class="font-display text-white/40 mt-1 sm:mt-2 text-[0.45rem] sm:text-[0.58rem] tracking-[0.2em] sm:tracking-[0.3em] uppercase">Sports</p>
                     </div>
                     <div class="text-center">
-                        <p class="font-display text-white" style="font-size:3rem;font-weight:700;line-height:1" data-counter="{{ $venueCount }}">{{ sprintf('%02d', $venueCount) }}</p>
-                        <p class="font-display text-white/40 mt-1" style="font-size:0.58rem;letter-spacing:0.3em;text-transform:uppercase">Venues</p>
+                        <p class="font-display text-white text-3xl sm:text-5xl font-bold leading-none" data-counter="{{ $venueCount }}">{{ sprintf('%02d', $venueCount) }}</p>
+                        <p class="font-display text-white/40 mt-1 sm:mt-2 text-[0.45rem] sm:text-[0.58rem] tracking-[0.2em] sm:tracking-[0.3em] uppercase">Venues</p>
                     </div>
                 </div>
             </div>
