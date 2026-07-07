@@ -199,11 +199,12 @@ helper: isOwnedBy(User $user): bool
 fillable: host_id, sport_id, title, description, venue_name,
           latitude, longitude, start_time, end_time,
           max_slots, price, payment_info, visibility, match_type,
-          approval_required, status
+          approval_required, status, is_challenge
 visibility:    'public' | 'private'
 match_type:    'singles' | 'doubles'
 approval_required: boolean (default false)
 status:        'upcoming' | 'ongoing' | 'completed' | 'cancelled'
+is_challenge:  boolean (default false)
 ```
 
 ### Relationships

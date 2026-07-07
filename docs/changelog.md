@@ -5,6 +5,23 @@
 
 ---
 
+## July 2026 — Matchmaking Challenge Flow & Event Privacy
+
+### Matchmaking: Direct Challenge Button
+**Feature:** Added a direct `CHALLENGE` button on the recommended opponents cards in the matchmaking grid, matching the action available in the match reveal overlay.
+
+### Event System: Challenge Privacy & Deletion on Decline
+**Feature:** Matchmaking challenges now create private, isolated events.
+- Added `is_challenge` boolean to `events` table (default `false`).
+- When an event is created via the challenge flow (`opponent_id` is present), it automatically sets `is_challenge = true` and `visibility = private`.
+- **Public Feed:** `EventController@index` explicitly excludes events where `is_challenge = true`.
+- **Lifecycle Cleanup:** In `MyEventsController@declineChallenge`, if the opponent declines an invite and the event is a challenge event, the entire event is deleted automatically, preventing empty "zombie" events.
+
+### AI Chatbot: General Info RAG Fix
+**Fix:** Added `docs/general-info.md` detailing what PlayMate is, and adjusted the `ChatbotService` prompt to relax restrictions on general questions. The chatbot can now successfully answer "Apa yang Anda ketahui tentang Playmate".
+
+---
+
 ## June 2026 — Week 4 (continued): Profile Sports, Matchmaking Filter Fixes
 
 ### Profile — Sports Editor: Multiple Sports Now Addable

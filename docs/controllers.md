@@ -39,9 +39,9 @@ Preloads all data for performance (no N+1 queries):
 
 | Method | Description |
 |---|---|
-| `index(createFilters)` | Shows events from `now()->subDays(90)` to `now()->addYear()` (fixed: was showing none after seeder dates passed) |
+| `index(createFilters)` | Shows events from `now()->subDays(90)` to `now()->addYear()` (fixed: was showing none after seeder dates passed). **Excludes events with `is_challenge = true`.** |
 | `create()` | Show event creation form |
-| `store()` | Validate + create event. If `opponent_id` provided → auto-add opponent as pending participant |
+| `store()` | Validate + create event. If `opponent_id` provided → auto-add opponent as pending participant, sets `is_challenge=true` and `visibility=private`. |
 | `show()` | Event detail + participant list |
 | `join()` | Join event (auto-approved if `approval_required=false`) |
 | `leave()` | Leave event (cancels own participation) |
@@ -86,6 +86,8 @@ none            → can connect
 | `hostRequests()` | List all pending join requests across user's hosted events |
 | `approve(EventParticipant $participant)` | Sets status to `approved`, assigns next `slot_number`, posts system message to event chat. **403 if not host.** Disabled if event is full |
 | `reject(EventParticipant $participant)` | Sets status to `rejected`, posts system message to event chat. **403 if not host** |
+| `acceptChallenge(EventParticipant)` | Opponent accepts a challenge invite. Sets status to `approved`. |
+| `declineChallenge(EventParticipant)` | Opponent declines a challenge invite. Sets status to `rejected`. **If event is `is_challenge=true`, deletes the event entirely.** |
 
 ---
 

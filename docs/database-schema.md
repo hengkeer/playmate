@@ -75,6 +75,7 @@
 | match_type | enum(singles/doubles) default singles | |
 | approval_required | boolean default false | |
 | status | enum(upcoming/ongoing/completed/cancelled) | |
+| is_challenge | boolean default false | `true` if event originated from direct matchmaking challenge |
 | timestamps | | |
 
 ### `event_participants`

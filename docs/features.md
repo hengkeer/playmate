@@ -48,9 +48,9 @@ See `docs/matchmaking-algorithm.md` for full details.
 - Host creates event: sport, venue, GPS, max_slots, price, visibility, match type
 - **Auto-join host:** Host automatically added as first participant (status `approved`, slot 1)
 - Join/leave/cancel with full participant list
-- **Challenge flow:** `⚔️ Challenge!` dari matchmaking → `GET /events/challenge/{user}` → `host-game.blade.php` (dark-theme challenge form dengan opponent banner) → post ke `events.store` → lawan di-invite sebagai pending participant (`is_invite=true`, slot 2) → **notifikasi `challenge_invite` dikirim ke lawan**
+- **Challenge flow:** `⚔️ Challenge!` dari matchmaking → `GET /events/challenge/{user}` → `host-game.blade.php` (dark-theme challenge form dengan opponent banner) → post ke `events.store` → lawan di-invite sebagai pending participant (`is_invite=true`, slot 2), dan Event ditandai dengan `is_challenge=true` & `visibility=private` agar tidak muncul di halaman Events publik → **notifikasi `challenge_invite` dikirim ke lawan**
 - **Approval system:** Jika `approval_required=true`, join request masuk status `pending`; host approve/decline via `/my-events/host-requests`. **Notifikasi `join_request` dikirim ke host, notifikasi `join_approved`/`join_rejected` dikirim kembali ke pemain setelah host merespons.**
-- **"Host a Game" is Challenge flow only.** `host-game.blade.php` adalah form challenge, bukan tipe game terpisah. Membuat record `Event` standar dengan `visibility=private`.
+- **"Host a Game" is Challenge flow only.** `host-game.blade.php` adalah form challenge, bukan tipe game terpisah. Membuat record `Event` dengan `is_challenge=true` dan `visibility=private`.
 
 ---
 
@@ -90,7 +90,7 @@ Alur ketika seorang pemain di-challenge melalui fitur matchmaking:
 3. Notifikasi `challenge_invite` dikirim ke lawan
 4. Lawan melihat challenge di tab **Incoming Challenges** pada halaman My Events
 5. **Accept** (`POST /my-events/challenges/{participant}/accept`): status → `approved`, notifikasi `challenge_accepted` dikirim ke challenger
-6. **Decline** (`POST /my-events/challenges/{participant}/decline`): status → `rejected`, notifikasi `challenge_declined` dikirim ke challenger
+6. **Decline** (`POST /my-events/challenges/{participant}/decline`): status → `rejected`, notifikasi `challenge_declined` dikirim ke challenger. **Karena ini adalah Event tantangan (`is_challenge=true`), maka Event tersebut otomatis dihapus seluruhnya dari database.**
 
 > Perbedaan kunci: `is_invite=false` = join request biasa (dikelola host); `is_invite=true` = challenge invite (dikelola lawan).
 
