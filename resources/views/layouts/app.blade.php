@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'PlayMate')</title>
+    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
     @include('partials._theme-init-script')
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -166,34 +167,41 @@
 <body class="min-h-screen bg-ink-900 text-white antialiased">
 
     {{-- Top bar --}}
-    <header style="background:rgb(var(--bg-base) / 0.97);border-bottom:1px solid rgb(var(--border-base));position:sticky;top:0;z-index:50;backdrop-filter:blur(8px)">
-        <div class="max-w-screen-xl mx-auto px-6 lg:px-12">
-            <div class="flex items-center justify-between gap-6" style="height:68px">
+    <header x-data="{ mobileMenuOpen: false }" style="background:rgb(var(--bg-base) / 0.97);border-bottom:1px solid rgb(var(--border-base));position:sticky;top:0;z-index:50;backdrop-filter:blur(8px)">
+        <div class="max-w-screen-xl mx-auto px-6 lg:px-12 relative">
+            <div class="flex items-center justify-between" style="height:68px">
 
-                {{-- Left nav --}}
-                @auth
-                <nav class="hidden lg:flex items-center gap-8">
-                    <a href="{{ route('dashboard') }}" class="font-display text-xs tracking-widest transition {{ request()->routeIs('dashboard') ? 'text-[#F97316]' : 'text-white/65 hover:text-white' }}" style="font-size:0.78rem;letter-spacing:0.15em;text-transform:uppercase">Dashboard</a>
-                    <a href="{{ route('matchmaking') }}" class="font-display text-xs tracking-widest transition {{ request()->routeIs('matchmaking') ? 'text-[#F97316]' : 'text-white/65 hover:text-white' }}" style="font-size:0.78rem;letter-spacing:0.15em;text-transform:uppercase">Match</a>
-                    <a href="{{ route('events.index') }}" class="font-display text-xs tracking-widest transition {{ request()->routeIs('events.*') ? 'text-[#F97316]' : 'text-white/65 hover:text-white' }}" style="font-size:0.78rem;letter-spacing:0.15em;text-transform:uppercase">Events</a>
-                </nav>
-                @else
-                <nav class="hidden lg:flex items-center gap-8">
-                    <a href="{{ route('events.index') }}" class="font-display text-xs tracking-widest text-white/65 hover:text-white transition" style="font-size:0.78rem;letter-spacing:0.15em;text-transform:uppercase">Events</a>
-                    <a href="{{ route('venues.index') }}" class="font-display text-xs tracking-widest text-white/65 hover:text-white transition" style="font-size:0.78rem;letter-spacing:0.15em;text-transform:uppercase">Venues</a>
-                </nav>
-                @endauth
+                {{-- Left nav & Mobile Toggle --}}
+                <div class="flex items-center flex-1 justify-start">
+                    <button @click="mobileMenuOpen = !mobileMenuOpen" class="lg:hidden text-white/70 hover:text-white mr-4">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                    </button>
+                    @auth
+                    <nav class="hidden lg:flex items-center gap-8">
+                        <a href="{{ route('dashboard') }}" class="font-display text-xs tracking-widest transition {{ request()->routeIs('dashboard') ? 'text-[#F97316]' : 'text-white/65 hover:text-white' }}" style="font-size:0.78rem;letter-spacing:0.15em;text-transform:uppercase">Dashboard</a>
+                        <a href="{{ route('matchmaking') }}" class="font-display text-xs tracking-widest transition {{ request()->routeIs('matchmaking') ? 'text-[#F97316]' : 'text-white/65 hover:text-white' }}" style="font-size:0.78rem;letter-spacing:0.15em;text-transform:uppercase">Match</a>
+                        <a href="{{ route('events.index') }}" class="font-display text-xs tracking-widest transition {{ request()->routeIs('events.*') ? 'text-[#F97316]' : 'text-white/65 hover:text-white' }}" style="font-size:0.78rem;letter-spacing:0.15em;text-transform:uppercase">Events</a>
+                    </nav>
+                    @else
+                    <nav class="hidden lg:flex items-center gap-8">
+                        <a href="{{ route('events.index') }}" class="font-display text-xs tracking-widest text-white/65 hover:text-white transition" style="font-size:0.78rem;letter-spacing:0.15em;text-transform:uppercase">Events</a>
+                        <a href="{{ route('venues.index') }}" class="font-display text-xs tracking-widest text-white/65 hover:text-white transition" style="font-size:0.78rem;letter-spacing:0.15em;text-transform:uppercase">Venues</a>
+                    </nav>
+                    @endauth
+                </div>
 
                 {{-- Logo center --}}
-                <a href="{{ route('home') }}" class="flex-shrink-0 flex flex-col items-center leading-none group mx-auto lg:mx-0">
-                    <span class="font-display text-white group-hover:text-[#F97316] transition" style="font-size:1.45rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase">PLAYMATE</span>
-                    <span class="font-display text-white/35" style="font-size:0.5rem;letter-spacing:0.45em;text-transform:uppercase">SPORTS CLUB</span>
-                </a>
+                <div class="absolute left-1/2 transform -translate-x-1/2 flex justify-center">
+                    <a href="{{ route('home') }}" class="flex-shrink-0 flex flex-col items-center leading-none group">
+                        <span class="font-display text-white group-hover:text-[#F97316] transition" style="font-size:1.45rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase">PLAYMATE</span>
+                        <span class="font-display text-white/35" style="font-size:0.5rem;letter-spacing:0.45em;text-transform:uppercase">SPORTS CLUB</span>
+                    </a>
+                </div>
 
                 {{-- Right nav --}}
-                @auth
-                <div class="flex items-center gap-5">
-                    <nav class="hidden lg:flex items-center gap-8">
+                <div class="flex items-center gap-5 flex-1 justify-end">
+                    @auth
+                    <nav class="hidden lg:flex items-center gap-8 mr-2">
                         <a href="{{ route('venues.index') }}" class="font-display transition {{ request()->routeIs('venues.*') ? 'text-[#F97316]' : 'text-white/65 hover:text-white' }}" style="font-size:0.78rem;letter-spacing:0.15em;text-transform:uppercase">Venues</a>
                         <a href="{{ route('connections.index') }}" class="font-display transition {{ request()->routeIs('connections.*') ? 'text-[#F97316]' : 'text-white/65 hover:text-white' }}" style="font-size:0.78rem;letter-spacing:0.15em;text-transform:uppercase">Network</a>
                         <a href="{{ route('my-events') }}" class="font-display transition {{ request()->routeIs('my-events*') ? 'text-[#F97316]' : 'text-white/65 hover:text-white' }}" style="font-size:0.78rem;letter-spacing:0.15em;text-transform:uppercase">Schedule</a>
@@ -249,16 +257,37 @@
                             {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
                         </div>
                     </a>
-                    <form method="POST" action="{{ route('logout') }}">@csrf
+                    <form method="POST" action="{{ route('logout') }}" class="hidden lg:block">@csrf
                         <button type="submit" class="font-display text-white/35 hover:text-[#F97316] transition" style="font-size:0.78rem;letter-spacing:0.15em;text-transform:uppercase">Logout</button>
                     </form>
-                </div>
-                @else
-                <div class="flex items-center gap-5">
+                    @else
                     @include('partials._theme-toggle')
                     <a href="{{ route('login') }}" class="hidden lg:block font-display text-white/65 hover:text-white transition" style="font-size:0.78rem;letter-spacing:0.15em;text-transform:uppercase">Sign In</a>
-                    <a href="{{ route('register') }}" class="font-display text-white" style="background:#D62B2B;padding:0.55rem 1.2rem;font-size:0.78rem;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;transition:background 0.2s" onmouseover="this.style.background='#F97316'" onmouseout="this.style.background='#D62B2B'">Join Now ★</a>
+                    <a href="{{ route('register') }}" class="hidden lg:block font-display text-white" style="background:#D62B2B;padding:0.55rem 1.2rem;font-size:0.78rem;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;transition:background 0.2s" onmouseover="this.style.background='#F97316'" onmouseout="this.style.background='#D62B2B'">Join Now ★</a>
+                    @endauth
                 </div>
+            </div>
+
+            {{-- Mobile Menu --}}
+            <div x-show="mobileMenuOpen" x-transition x-cloak class="lg:hidden absolute top-full left-0 w-full shadow-2xl py-4 px-6 flex flex-col gap-4" style="background:rgb(var(--bg-base) / 0.98); border-bottom:1px solid rgb(var(--border-base)); backdrop-filter:blur(8px)">
+                @auth
+                <a href="{{ route('dashboard') }}" class="font-display text-sm tracking-widest {{ request()->routeIs('dashboard') ? 'text-[#F97316]' : 'text-white/80' }} uppercase">Dashboard</a>
+                <a href="{{ route('matchmaking') }}" class="font-display text-sm tracking-widest {{ request()->routeIs('matchmaking') ? 'text-[#F97316]' : 'text-white/80' }} uppercase">Match</a>
+                <a href="{{ route('events.index') }}" class="font-display text-sm tracking-widest {{ request()->routeIs('events.*') ? 'text-[#F97316]' : 'text-white/80' }} uppercase">Events</a>
+                <a href="{{ route('venues.index') }}" class="font-display text-sm tracking-widest {{ request()->routeIs('venues.*') ? 'text-[#F97316]' : 'text-white/80' }} uppercase">Venues</a>
+                <a href="{{ route('connections.index') }}" class="font-display text-sm tracking-widest {{ request()->routeIs('connections.*') ? 'text-[#F97316]' : 'text-white/80' }} uppercase">Network</a>
+                <a href="{{ route('my-events') }}" class="font-display text-sm tracking-widest {{ request()->routeIs('my-events*') ? 'text-[#F97316]' : 'text-white/80' }} uppercase">Schedule</a>
+                <hr class="border-white/10 my-2">
+                <a href="{{ route('profile.index') }}" class="font-display text-sm tracking-widest text-white/80 uppercase">Profile</a>
+                <form method="POST" action="{{ route('logout') }}">@csrf
+                    <button type="submit" class="font-display text-sm tracking-widest text-brand-red uppercase">Logout</button>
+                </form>
+                @else
+                <a href="{{ route('events.index') }}" class="font-display text-sm tracking-widest text-white/80 uppercase">Events</a>
+                <a href="{{ route('venues.index') }}" class="font-display text-sm tracking-widest text-white/80 uppercase">Venues</a>
+                <hr class="border-white/10 my-2">
+                <a href="{{ route('login') }}" class="font-display text-sm tracking-widest text-white/80 uppercase">Sign In</a>
+                <a href="{{ route('register') }}" class="font-display text-sm tracking-widest text-[#F97316] uppercase">Join Now</a>
                 @endauth
             </div>
         </div>
