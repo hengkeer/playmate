@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'PlayMate')</title>
-    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}?v={{ time() }}">
+    <link rel="shortcut icon" type="image/png" href="{{ asset('favicon.png') }}?v={{ time() }}">
     @include('partials._theme-init-script')
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -263,7 +264,7 @@
                     @else
                     @include('partials._theme-toggle')
                     <a href="{{ route('login') }}" class="hidden lg:block font-display text-white/65 hover:text-white transition" style="font-size:0.78rem;letter-spacing:0.15em;text-transform:uppercase">Sign In</a>
-                    <a href="{{ route('register') }}" class="hidden lg:block font-display text-white" style="background:#D62B2B;padding:0.55rem 1.2rem;font-size:0.78rem;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;transition:background 0.2s" onmouseover="this.style.background='#F97316'" onmouseout="this.style.background='#D62B2B'">Join Now ★</a>
+                    <a href="{{ route('register') }}" class="hidden lg:block font-display text-white" style="background:#D62B2B;padding:0.55rem 1.2rem;font-size:0.78rem;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;transition:background 0.2s" onmouseover="this.style.background='#F97316'" onmouseout="this.style.background='#D62B2B'">Join Now</a>
                     @endauth
                 </div>
             </div>
