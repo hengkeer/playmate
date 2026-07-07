@@ -18,6 +18,10 @@ class MatchmakingController extends Controller
     {
         $user = Auth::user();
 
+        // Check if user has completed profile (at least one sport)
+        if ($user->userSports()->count() === 0) {
+            return redirect()->route('profile.index')->with('error', 'Please complete your profile and add at least one sport before using Matchmaking.');
+        }
         // Build filters from request
         $filters = $request->only([
             'sport_id',

@@ -90,8 +90,6 @@ class ProfileController extends Controller
             }
         }
 
-        $user->update(['last_active_at' => now()]);
-
         return redirect()->back()->with('success', 'Profile updated successfully.');
     }
 }

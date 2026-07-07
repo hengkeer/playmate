@@ -18,6 +18,7 @@ class User extends Authenticatable implements FilamentUser
         'photo_url', 'bio', 'gender', 'age_range',
         'home_address', 'latitude', 'longitude',
         'play_style', 'last_active_at', 'total_events_joined',
+        'google_id', 'avatar',
     ];
 
     protected $hidden = [

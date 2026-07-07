@@ -26,9 +26,15 @@ Route::get('/players/{user}', [ConnectionController::class, 'playerProfile'])->n
 Route::get('/login', fn() => view('auth.login'))->name('login');
 Route::post('/login', function () {
     $creds = request()->only('email', 'password');
-    if (auth()->attempt($creds)) return redirect()->intended('/dashboard');
+    if (auth()->attempt($creds)) {
+        auth()->user()->update(['last_active_at' => now()]);
+        return redirect()->intended('/dashboard');
+    }
     return back()->withErrors(['email' => 'Invalid credentials']);
 })->name('login.post');
+
+Route::get('/auth/google', [\App\Http\Controllers\Auth\SocialiteController::class, 'redirect'])->name('google.login');
+Route::get('/auth/google/callback', [\App\Http\Controllers\Auth\SocialiteController::class, 'callback']);
 
 Route::get('/register', fn() => view('auth.register'))->name('register');
 Route::post('/register', function () {
@@ -40,7 +46,7 @@ Route::post('/register', function () {
     ]);
     $user = \App\Models\User::create($data);
     auth()->login($user);
-    return redirect('/dashboard');
+    return redirect('/profile')->with('success', 'Welcome to PlayMate! Please add at least 1 sport to your profile to get started.');
 })->name('register.post');
 
 Route::post('/logout', function () {

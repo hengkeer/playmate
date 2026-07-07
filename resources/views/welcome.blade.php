@@ -10,7 +10,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>[x-cloak]{display:none!important}</style>
     <script>
         tailwind.config = {
             theme: {
@@ -243,17 +245,22 @@
         <div class="w-full max-w-lg" data-animate="fade-up">
             <div style="border:1px solid rgb(var(--fg) / 0.12);padding:1.75rem 2rem;background:rgba(0,0,0,0.5);backdrop-filter:blur(6px)">
                 <p class="bs-label mb-4">Active Roster</p>
+                @php
+                    $memberCount = \App\Models\User::count();
+                    $sportCount = \App\Models\Sport::count();
+                    $venueCount = \App\Models\Venue::count();
+                @endphp
                 <div class="grid grid-cols-3 gap-6">
                     <div class="text-center">
-                        <p class="font-display text-white" style="font-size:3rem;font-weight:700;line-height:1" data-counter="32">32</p>
+                        <p class="font-display text-white" style="font-size:3rem;font-weight:700;line-height:1" data-counter="{{ $memberCount }}">{{ sprintf('%02d', $memberCount) }}</p>
                         <p class="font-display text-white/40 mt-1" style="font-size:0.58rem;letter-spacing:0.3em;text-transform:uppercase">Members</p>
                     </div>
                     <div class="text-center">
-                        <p class="font-display text-white" style="font-size:3rem;font-weight:700;line-height:1" data-counter="3">03</p>
+                        <p class="font-display text-white" style="font-size:3rem;font-weight:700;line-height:1" data-counter="{{ $sportCount }}">{{ sprintf('%02d', $sportCount) }}</p>
                         <p class="font-display text-white/40 mt-1" style="font-size:0.58rem;letter-spacing:0.3em;text-transform:uppercase">Sports</p>
                     </div>
                     <div class="text-center">
-                        <p class="font-display text-white" style="font-size:3rem;font-weight:700;line-height:1" data-counter="8">08</p>
+                        <p class="font-display text-white" style="font-size:3rem;font-weight:700;line-height:1" data-counter="{{ $venueCount }}">{{ sprintf('%02d', $venueCount) }}</p>
                         <p class="font-display text-white/40 mt-1" style="font-size:0.58rem;letter-spacing:0.3em;text-transform:uppercase">Venues</p>
                     </div>
                 </div>
