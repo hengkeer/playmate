@@ -197,16 +197,65 @@
         @endif
     </section>
 
-    {{-- Description --}}
-    @if($event->description)
+    {{-- Details & Venue --}}
     <section class="grid gap-8 border-t border-white/10 pt-10 lg:grid-cols-[1fr_2fr]">
         <div>
             <p class="pm-section-title">About</p>
             <h2 class="font-display text-2xl uppercase mt-2 text-white">Details</h2>
         </div>
-        <p class="text-base leading-relaxed text-white/70">{{ $event->description }}</p>
+        <div class="space-y-10">
+            @if($event->description)
+                <div class="prose prose-invert prose-sm max-w-none">
+                    <p class="text-base leading-relaxed text-white/70">{{ $event->description }}</p>
+                </div>
+            @endif
+
+            @php
+                // Try to find matching venue to show detailed card
+                $venue = \App\Models\Venue::where('name', $event->venue_name)->first();
+            @endphp
+            
+            <div class="space-y-4 border-t border-white/10 pt-8">
+                <h3 class="font-display text-lg uppercase text-white/80">Venue Information</h3>
+                @if($venue)
+                    <div class="border border-white/10 bg-ink-900 overflow-hidden group">
+                        @if($venue->image_url)
+                            <div class="relative h-72 w-full overflow-hidden">
+                                <img src="{{ asset('storage/' . $venue->image_url) }}" onerror="this.src='{{ $venue->image_url }}'" alt="{{ $venue->name }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+                                <div class="absolute inset-0 bg-gradient-to-t from-ink-900 to-transparent opacity-80"></div>
+                            </div>
+                        @endif
+                        <div class="p-8 relative -mt-16 sm:-mt-20">
+                            <div class="inline-flex items-center gap-2 px-3 py-1 bg-accent text-ink-900 font-display text-[0.65rem] tracking-widest uppercase mb-4">
+                                {{ $event->sport?->name ?? 'Venue' }}
+                            </div>
+                            <h4 class="font-display text-3xl text-white uppercase">{{ $venue->name }}</h4>
+                            <p class="text-base text-white/60 mt-3 flex items-start gap-2">
+                                <svg class="w-5 h-5 text-accent mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                <span>{{ $venue->address }}</span>
+                            </p>
+                            @if($venue->open_hours)
+                                <p class="text-sm text-white/40 mt-3 flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    {{ $venue->open_hours }}
+                                </p>
+                            @endif
+                        </div>
+                    </div>
+                @else
+                    <div class="border border-white/10 bg-ink-900 p-8 flex items-start gap-4">
+                        <div class="bg-accent/10 p-3 text-accent rounded-full shrink-0">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        </div>
+                        <div>
+                            <h4 class="font-display text-2xl text-white uppercase">{{ $event->venue_name }}</h4>
+                            <p class="text-base text-white/60 mt-2">Detailed address not available for this custom location.</p>
+                        </div>
+                    </div>
+                @endif
+            </div>
+        </div>
     </section>
-    @endif
 
 </div>
 @endsection
