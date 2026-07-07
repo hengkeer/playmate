@@ -233,11 +233,11 @@
         </p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center mb-14 w-full sm:w-auto px-4" data-animate="fade-up">
             @guest
-                <a href="{{ route('register') }}" class="bs-btn-primary w-full sm:w-auto text-center">Become a Member</a>
-                <a href="{{ route('events.index') }}" class="bs-btn-outline w-full sm:w-auto text-center">Browse Events</a>
+                <a href="{{ route('register') }}" class="bs-btn-primary w-full sm:w-auto justify-center">Become a Member</a>
+                <a href="{{ route('events.index') }}" class="bs-btn-outline w-full sm:w-auto justify-center">Browse Events</a>
             @else
-                <a href="{{ route('dashboard') }}" class="bs-btn-primary w-full sm:w-auto text-center">Enter Dashboard</a>
-                <a href="{{ route('matchmaking') }}" class="bs-btn-outline w-full sm:w-auto text-center">Find A Match</a>
+                <a href="{{ route('dashboard') }}" class="bs-btn-primary w-full sm:w-auto justify-center">Enter Dashboard</a>
+                <a href="{{ route('matchmaking') }}" class="bs-btn-outline w-full sm:w-auto justify-center">Find A Match</a>
             @endguest
         </div>
 
